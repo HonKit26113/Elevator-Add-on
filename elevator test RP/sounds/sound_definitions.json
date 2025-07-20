@@ -1,0 +1,12 @@
+{
+    "honkit26113.elevator_arrive": {
+      "category": "neutral",
+      "sounds": [
+        {
+          "name": "sounds/honkit26113_elevator_arrive",
+          "stream": true,
+          "volume": 1
+        }
+      ]
+    }
+}

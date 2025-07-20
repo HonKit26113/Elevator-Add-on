@@ -1,0 +1,40 @@
+// This file was modified by HonKit26113 (@HonKit1103). Do not distribute without permission.
+{
+  "format_version": "1.21.20",
+  "minecraft:block": {
+    "description": {
+      "identifier": "honkit26113:elevator_terminal",
+      "menu_category": {
+        "category": "items",
+        "group": "none"
+      }
+    },
+    "components": {
+      "minecraft:custom_components": [
+        "honkit26113:on_interact"
+      ],
+      "minecraft:geometry": "minecraft:geometry.full_block",
+      "minecraft:destructible_by_mining": {
+        "seconds_to_destroy": 3
+      },
+      "minecraft:destructible_by_explosion": {
+        "explosion_resistance": 20
+      },
+      "minecraft:map_color": "#672E7D",
+      "minecraft:material_instances" : {
+        "*": {
+          "texture": "diamond_block",
+          "render_method" : "opaque"
+        },
+        "up": {
+          "texture": "emerald_block",
+          "render_method" : "opaque"
+        },
+        "down": {
+          "texture": "emerald_block",
+          "render_method" : "opaque"
+        }
+      }
+    }
+  }
+}

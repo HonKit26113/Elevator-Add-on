@@ -1,0 +1,29 @@
+{
+    "format_version": 2,
+    "header": {
+        "description": "Released July 24, 2024.",
+        "name": "elevator test rp",
+        "uuid": "a96fd605-5dbc-460e-8d65-e527c1d088f4",
+        "version": [
+            1,
+            0,
+            0
+        ],
+        "min_engine_version": [
+            1,
+            18,
+            0
+        ]
+    },
+    "modules": [
+        {
+            "type": "resources",
+            "uuid": "1c3670c5-8029-4c89-81cd-8441251df2b5",
+            "version": [
+                1,
+                0,
+                0
+            ]
+        }
+    ]
+}

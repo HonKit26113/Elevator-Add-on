@@ -1,0 +1,40 @@
+{
+  "format_version": "1.16.0",
+  "minecraft:entity": {
+    "description": {
+      "identifier": "honkit26113:elevator_block",
+      "runtime_identifier": "minecraft:boat",
+      "is_spawnable": true,
+      "is_summonable": true, // change to false
+      "is_experimental": false
+    },
+    "components": {
+      "minecraft:type_family": {
+        "family": [ "elevator_block" ]
+      },
+      "minecraft:collision_box": {
+        "width": 1,
+        "height": 1
+      },
+      "minecraft:health": {
+        "value": 7,
+        "max": 7
+      },
+      "minecraft:damage_sensor": {
+        "triggers": {
+          "cause": "all",
+          "deals_damage": false
+        }
+      },
+      "minecraft:pushable": {
+        "is_pushable": false,
+        "is_pushable_by_piston": false
+      },
+      "minecraft:physics": {
+        "has_collision": true,
+        "has_gravity": false
+      },
+      "minecraft:is_stackable": {}
+    }
+  }
+}

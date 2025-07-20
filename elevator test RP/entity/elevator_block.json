@@ -1,0 +1,24 @@
+{
+  "format_version": "1.8.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "honkit26113:elevator_block",
+      "materials": {
+        "default": "boat"
+      },
+      "textures": {
+        "default": "textures/blocks/iron_block"
+      },
+      "geometry": {
+        "default": "geometry.honkit26113_elevator"
+      },
+      "render_controllers": [
+        "controller.render.default"
+      ],
+      "spawn_egg": {
+        "base_color": "#7CA5F4",
+        "overlay_color": "#335BA5"
+      }
+    }
+  }
+}
