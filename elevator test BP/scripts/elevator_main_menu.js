@@ -1,10 +1,101 @@
-import { world, system, BlockPermutation, BlockTypes } from '@minecraft/server';
-import { ActionFormData, ModalFormData, ActionFormResponse } from "@minecraft/server-ui";
+import { world, system } from '@minecraft/server';
+import { ActionFormData, ModalFormData } from "@minecraft/server-ui";
+
+
+/** 
+ * TODO:
+ * - "Remember Elevator" DONE
+ * - Admin privileges (only admins can edit & select floor)
+ * - Elevator tags
+ * - Elevator wrenches to set settings for each elevator entity (entity tags)
+ * - Customizable elevator speeds
+ * */ 
 
 
 let elevator_name = []
 let elevator_floor_name = []
 let elevator_floor_level = []
+
+export function openInitMenu(player, total_elevator_number, block) {
+    const initMenu = new ActionFormData()
+        .title(`Hello!`)
+        .body(`test`)
+        .button(`Set up this Terminal`)
+        .button(`Add/Edit Elevators`)
+        //.toggle(`Only Operators can change Elevator settings`, false);
+    initMenu.show(player).then(
+        (response) => {
+            switch (response.selection) {
+                case 0:
+                case 1:
+                    showList(player, total_elevator_number, response.selection, block);
+                    break;
+                //case 2:
+                    // toggle
+                    //if (response.formValues[2] === true) {
+                    // set dynamic property
+                    //break;
+                default:
+                    world.sendMessage("hi")
+                    return;
+            }
+        }
+    )
+}
+
+/**
+ * 
+ * @param {Player} player 
+ * @param {Integer} actionNumber 
+ * 0: select elevator to focus terminal on
+ * 1: edit elevator properties (can also choose floor to edit) -- REQUIRES ADD ELEVATOR BUTTON
+ * 2: see all floors (for travel) - normal mode
+ */
+function showList(player, total_elevator_number, actionNumber, block) {
+    if (world.getDynamicProperty(`honkit26113:elevator_names`) === undefined) {
+        elevator_name = ["New Elevator"]
+    } else {
+        elevator_name = JSON.parse(world.getDynamicProperty(`honkit26113:elevator_names`));
+    }
+    if (elevator_name.length == 1) {
+        "".concat(elevator_name)
+    }
+    world.sendMessage(`${elevator_name}`)
+    world.sendMessage(`elevator no. property${world.getDynamicProperty("honkit26113:total_elevator_number")}`)
+    world.sendMessage(`elevator no. variable${total_elevator_number}`)
+
+    const listMenu = new ActionFormData()
+        .title(`Select an Elevator`)
+        if (actionNumber === 1) {
+            listMenu.button(`Create New Elevator`,"textures/ui/plus")
+        }
+        for (let i = 1; i <= total_elevator_number; i++) {
+            if (elevator_name[i] === undefined) {
+                listMenu.button(`New Elevator`)
+            } else {
+                listMenu.button(`${elevator_name[i]}`)
+            }
+        }
+
+    listMenu.show(player).then(
+        response => {
+            switch (actionNumber) {
+                case 0: // select elevator to focus terminal on
+                    world.setDynamicProperty(`honkit26113:terminal${JSON.stringify(block.location)}`, response.selection + 1);
+                    world.sendMessage(`p: ${world.getDynamicProperty(`honkit26113:terminal${JSON.stringify(block.location)}`)}`)
+                    break;
+                case 1: // edit elevator properties (can also choose floor to edit)
+                    open_submenu(player, response.selection, block, 1);
+                    break;
+                case 2: // see all floors (for travel) - normal mode
+                    open_submenu(player, response.selection, block, 0);
+                    break;
+                default:
+                    return;
+            }
+        }
+    )
+}
 
 export function open_main_menu(player, total_elevator_number, block) {
     if (world.getDynamicProperty(`honkit26113:elevator_names`) === undefined) {
@@ -39,12 +130,12 @@ export function open_main_menu(player, total_elevator_number, block) {
                 return;
             }
             world.sendMessage(`Button no. ${main_menu_response.selection}`)
-            open_submenu(player, main_menu_response.selection, block)
+            open_submenu(player, main_menu_response.selection, block, 0)
         }
     )
 }
 
-export function open_submenu(player, elevator_code, block) {
+export function open_submenu(player, elevator_code, block, actionNumber) {
     if (world.getDynamicProperty(`honkit26113:elevator_floor_names${elevator_code}`) === undefined) {
         elevator_floor_name = ["New Floor"]
     } else {
@@ -56,35 +147,61 @@ export function open_submenu(player, elevator_code, block) {
     if (elevator_name[elevator_code] === undefined) {
         elevator_name[elevator_code] = `New Elevator`
     };
-    submenu.title(`${elevator_name[elevator_code]}`)
-    submenu.button(`Edit Elevator Properties`,"textures/ui/editIcon")
-    for (let i = 1; i <= 20; i++) {
+    submenu.title(`Select Floor for ${elevator_name[elevator_code]}`)
+    if (actionNumber === 2) { // TODO: HIDE IF ONLY OPERATORS CAN EDIT SETTINGS
+        submenu.button(`Open Admin Panel`,"textures/ui/permissions_op_crown")
+    }
+    // Edit Elevator Properties button
+    if (actionNumber === 1) {
+        submenu.button(`Edit Elevator Properties`,"textures/ui/editIcon")
+    }
+    // Floor selection buttons
+    for (let i = 1; i <= elevator_floor_name.length - 1; i++) {
         if (elevator_floor_name[i] === undefined) {
             elevator_floor_name[i] = `New Floor`
         }
         submenu.button(`${elevator_floor_name[i]}`)
     }
+    if (actionNumber === 1) {
+        submenu.button("New Floor","textures/ui/plus")
+    }
     submenu.show(player).then(
         (submenu_response) => {
             if (submenu_response.selection === undefined) return;
-            world.setDynamicProperty("honkit26113:elevator_names", JSON.stringify(elevator_name));
-            world.sendMessage(`Button no. ${submenu_response.selection}`)
-
-            // edit elevator properties
-            if (submenu_response.selection == 0) {
-                edit_elevator_properties(player, elevator_code);
-                return;
-            } else {
-            // open floor panel
-                if (elevator_floor_name[submenu_response.selection] === undefined) {
-                    elevator_floor_name[submenu_response.selection] = `New Floor`;
+            if (actionNumber === 1) {
+                if (submenu_response.selection == 0) {
+                    edit_elevator_properties(player, elevator_code);
+                    return;
+                } else {
+                // open floor panel
+                    if (elevator_floor_name[submenu_response.selection] === undefined) {
+                        elevator_floor_name[submenu_response.selection] = `New Floor`;
+                    }
+                    open_floor_details(player, elevator_code, submenu_response.selection, block)
                 }
-                open_floor_details(player, elevator_code, submenu_response.selection, block)
+            } else {
+                if (submenu_response.selection == 0) {
+                    // TODO: CHECK FOR PERMISSION LEVEL
+                    openInitMenu(player, world.getDynamicProperty("honkit26113:total_elevator_number"), block)
+                    return;
+                } else {
+                    world.sendMessage(`Button no. ${submenu_response.selection}`)
+                    
+                    if (world.getDynamicProperty(`honkit26113:elevator_floor_levels${elevator_code}`) === undefined) {
+                        elevator_floor_level = [0]
+                    } else {
+                        elevator_floor_level = JSON.parse(world.getDynamicProperty(`honkit26113:elevator_floor_levels${elevator_code}`));
+                    }
+
+                    // Move elevator to destination floor
+                    move_elevator(elevator_floor_level[submenu_response.selection], block);
+                }
             }
         }
     )
 }
 
+// ADMIN ONLY
 export function open_floor_details(player, elevator_code, floor, block) {
     if (world.getDynamicProperty(`honkit26113:elevator_floor_levels${elevator_code}`) === undefined) {
         elevator_floor_level = [0]
@@ -126,6 +243,7 @@ export function open_floor_details(player, elevator_code, floor, block) {
         )
 }
 
+// ADMIN ONLY
 export function edit_elevator_properties(player, elevator_code) {
     const elevator_properties_panel = new ModalFormData()
         .title(`Edit ${elevator_name[elevator_code]}`)
@@ -141,7 +259,11 @@ export function edit_elevator_properties(player, elevator_code) {
                 world.sendMessage(`dynamic property: ${world.getDynamicProperty("honkit26113:elevator_names")}`)
             }
         )
+    return elevator_properties_panel;
 }
+
+
+
 
 export function move_elevator(destination_level, block) {
     const find_elevator = block.dimension.getEntities({
@@ -151,46 +273,41 @@ export function move_elevator(destination_level, block) {
         maxDistance: 320
     })
     for (const entity of find_elevator) {
-        if (entity.location.y === destination_level) {
+        if (Math.floor(entity.location.y) === destination_level) {
             world.sendMessage(`you're already here!`)
             return;
         }
         
-        const destination_level_adjusted = Math.round(destination_level);
-        entity.runCommand(`setblock ~ ~-1 ~ air`)
-        const elevator_move = system.runInterval(() => {
+        system.runJob(move(entity, destination_level));
+    }
+
+}
+
+
+function* move(entity, destination_level) {
+    const destination_level_adjusted = Math.round(destination_level);
+    let last_executed_tick = system.currentTick;
+    while (true) {
+        if (system.currentTick - last_executed_tick >= 1) {
+            last_executed_tick = system.currentTick;
             if (destination_level_adjusted > entity.location.y) {
                 entity.teleport({ x: entity.location.x, y: entity.location.y+0.1, z: entity.location.z })
-                const find_passengers = entity.dimension.getEntities({
-                    location: entity.location,
-                    maxDistance: 1
-                })
-                for (const passenger of find_passengers) {
-                    passenger.teleport({ x: passenger.location.x, y: entity.location.y+0.1, z: passenger.location.z }, {rotation: passenger.rotation})
-                }
-                if (Math.floor(entity.location.y) == destination_level_adjusted) {
-                    entity.runCommand("setblock ~ ~-1 ~ minecraft:dirt")
-                    entity.runCommand("tp @e[r=1] ~ ~1 ~")
-                    system.clearRun(elevator_move);
-                }
             } else {
                 entity.teleport({ x: entity.location.x, y: entity.location.y-0.1, z: entity.location.z })
-                const find_passengers = entity.dimension.getEntities({
-                    location: entity.location,
-                    maxDistance: 1
-                })
-                for (const passenger of find_passengers) {
-                    passenger.teleport({ x: passenger.location.x, y: entity.location.y-0.1, z: passenger.location.z }, {rotation: passenger.rotation})
-                }
-                if (Math.round(entity.location.y) == destination_level_adjusted) {
-                    entity.runCommand("setblock ~ ~-1 ~ minecraft:dirt")
-                    for (const passenger of find_passengers) {
-                        passenger.runCommand("playsound honkit26113.elevator_arrive @a[r=15]")
-                        passenger.teleport({ x: entity.location.x, y: entity.location.y+1, z: entity.location.z })
-                    }
-                    system.clearRun(elevator_move);
-                }
             }
-        }, 2);
+            if (Math.abs(entity.location.y - destination_level_adjusted) < 0.1) {
+                const find_passengers = entity.dimension.getEntities({
+                    type: "minecraft:player",
+                    location: entity.location,
+                    maxDistance: 3
+                })
+                for (const p of find_passengers) {
+                    p.playSound("honkit26113.elevator_arrive")
+                }
+                entity.teleport({x: entity.location.x, y: destination_level, z: entity.location.z});
+                return 0;
+            }
+        }
+        yield;
     }
 }

@@ -1,0 +1,8 @@
+init menu
+   - welcome message
+   - edit elevators
+	- select elevator to edit
+	    - change elevator name
+            - change elevator tag (must be unique)
+   - choose elevator to focus block on
+   - toggle: only operators can change settings

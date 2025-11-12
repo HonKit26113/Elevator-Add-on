@@ -3,7 +3,7 @@
   "minecraft:entity": {
     "description": {
       "identifier": "honkit26113:elevator_block",
-      "runtime_identifier": "minecraft:boat",
+      "runtime_identifier": "minecraft:happy_ghast",
       "is_spawnable": true,
       "is_summonable": true, // change to false
       "is_experimental": false
@@ -11,6 +11,12 @@
     "components": {
       "minecraft:type_family": {
         "family": [ "elevator_block" ]
+      },
+      "minecraft:body_rotation_blocked": {
+      },
+      "minecraft:body_rotation_axis_aligned": {
+      },
+      "minecraft:is_collidable": {
       },
       "minecraft:collision_box": {
         "width": 1,
@@ -20,6 +26,11 @@
         "value": 7,
         "max": 7
       },
+        "minecraft:movement": {
+          "value": 0.0
+        },
+        "minecraft:movement.hover": {
+        },
       "minecraft:damage_sensor": {
         "triggers": {
           "cause": "all",

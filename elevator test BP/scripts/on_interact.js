@@ -1,16 +1,16 @@
-import { world, system, BlockPermutation, BlockTypes } from '@minecraft/server';
-import { ActionFormData, ModalFormData, ActionFormResponse } from "@minecraft/server-ui";
-import { open_main_menu } from './elevator_main_menu';
+import { world } from '@minecraft/server';
+import { ActionFormData } from "@minecraft/server-ui";
+import { openInitMenu, open_submenu } from './elevator_main_menu';
 
-world.afterEvents.itemUse.subscribe((data) => {
-    var destination_level = 0;
+/*world.afterEvents.itemUse.subscribe((data) => {
+    let destination_level = 0;
 	const player = data.source;
 	const item = player.getComponent("minecraft:inventory").container.getItem(player.selectedSlotIndex);
     if (item.typeId === "minecraft:breeze_rod") {
         world.clearDynamicProperties();
         world.sendMessage("done");
     }
-});
+});*/
 
 world.beforeEvents.worldInitialize.subscribe(eventData => {
     eventData.blockComponentRegistry.registerCustomComponent('honkit26113:on_interact', {
@@ -19,7 +19,23 @@ world.beforeEvents.worldInitialize.subscribe(eventData => {
             if (world.getDynamicProperty("honkit26113:total_elevator_number") === undefined) {
                 world.setDynamicProperty("honkit26113:total_elevator_number", 0)
             }
-            open_main_menu(player, world.getDynamicProperty("honkit26113:total_elevator_number"), block);
+            const is_focused = world.getDynamicProperty(`honkit26113:terminal${JSON.stringify(block.location)}`)
+            if (is_focused) {
+                world.sendMessage(`pew: ${world.getDynamicProperty(`honkit26113:terminal${JSON.stringify(block.location)}`)}`)
+                open_submenu(player, is_focused, block, 2);
+            } else if (player.playerPermissionLevel === "Operator") {
+                openInitMenu(player, world.getDynamicProperty("honkit26113:total_elevator_number"), block);
+            } else {
+                const errorMenu = new ActionFormData()
+                    .title(`Oops!`)
+                    .body(`An Operator has restricted Elevator Terminal configuration to Operators only. Contact an Operator for assistance.\n\nIf you are the World Owner, set your permission level to Operator for access.`)
+                    .button(`Ok`)
+                errorMenu.show(player).then(
+                    response => {
+                        return;
+                    }
+                )
+            }
         }
     })
 });

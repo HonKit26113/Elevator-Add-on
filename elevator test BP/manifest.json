@@ -2,7 +2,7 @@
 	"format_version": 2,
 	"header": {
 		"description": "Adds 5 new cave types for you to explore!\nPack made by HonKit26113.\nVersion 1.5.5 released July 25, 2024.",
-		"name": "ELEVATOR TEST",
+		"name": "ELEVATORS BP",
 		"uuid": "db406a80-3c67-4e30-a27f-35c7cc3f4763",
 		"version": [1, 5, 8],
         "min_engine_version": [
@@ -22,18 +22,18 @@
       		"language": "javascript",
       		"uuid": "eda017d0-345c-4d96-9e14-b15cfb526758",
       		"entry": "scripts/Main.js",
-      		"version": [0, 1, 0]
+      		"version": [1, 0, 0]
     	}
 	],
 	"capabilities": [ "script_eval" ],
     "dependencies": [
         {
       		"module_name": "@minecraft/server",
-      		"version": "1.12.0"
+      		"version": "1.19.0"
     	},
         {
       		"module_name": "@minecraft/server-ui",
-      		"version": "1.2.0"
+      		"version": "2.0.0"
     	}
     ]
 }
