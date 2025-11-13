@@ -1,4 +1,4 @@
-import { world } from '@minecraft/server';
+import { world, system, PlayerPermissionLevel } from '@minecraft/server';
 import { ActionFormData } from "@minecraft/server-ui";
 import { openInitMenu, open_submenu } from './elevator_main_menu';
 
@@ -12,7 +12,39 @@ import { openInitMenu, open_submenu } from './elevator_main_menu';
     }
 });*/
 
-world.beforeEvents.worldInitialize.subscribe(eventData => {
+/** @type {import("@minecraft/server").BlockCustomComponent} */
+const TerminalInteractComponent = {
+    onPlayerInteract({ block, player }, {}) {
+        if (world.getDynamicProperty("honkit26113:total_elevator_number") === undefined) {
+            world.setDynamicProperty("honkit26113:total_elevator_number", 0)
+        }
+        const is_focused = world.getDynamicProperty(`honkit26113:terminal${JSON.stringify(block.location)}`)
+        if (is_focused) {
+            world.sendMessage(`pew: ${world.getDynamicProperty(`honkit26113:terminal${JSON.stringify(block.location)}`)}`)
+            open_submenu(player, is_focused, block, 2);
+        } else if (player.playerPermissionLevel === PlayerPermissionLevel.Operator || !JSON.parse(world.getDynamicProperty("honkit26113:elevator_settings_op_only"))) {
+            openInitMenu(player, world.getDynamicProperty("honkit26113:total_elevator_number"), block);
+        } else {
+            const errorMenu = new ActionFormData()
+                .title(`Oops!`)
+                .body(`An Operator has restricted Elevator Terminal configuration to Operators only. Contact an Operator for assistance.\n\nIf you are the World Owner, set your permission level to Operator for access.`)
+                .button(`Ok`)
+            errorMenu.show(player).then(
+                response => {
+                    return;
+                }
+            )
+        }
+    },
+};
+
+system.beforeEvents.startup.subscribe(({ blockComponentRegistry }) => {
+    blockComponentRegistry.registerCustomComponent("honkit26113:terminal_interact", TerminalInteractComponent);
+});
+
+
+// Custom Components v1
+/*world.beforeEvents.worldInitialize.subscribe(eventData => {
     eventData.blockComponentRegistry.registerCustomComponent('honkit26113:on_interact', {
         onPlayerInteract(e) {
             const { player, block } = e;
@@ -23,9 +55,9 @@ world.beforeEvents.worldInitialize.subscribe(eventData => {
             if (is_focused) {
                 world.sendMessage(`pew: ${world.getDynamicProperty(`honkit26113:terminal${JSON.stringify(block.location)}`)}`)
                 open_submenu(player, is_focused, block, 2);
-            } else if (player.playerPermissionLevel === "Operator") {
+            } else {//if (player.playerPermissionLevel === "Operator") {
                 openInitMenu(player, world.getDynamicProperty("honkit26113:total_elevator_number"), block);
-            } else {
+            } /*else {
                 const errorMenu = new ActionFormData()
                     .title(`Oops!`)
                     .body(`An Operator has restricted Elevator Terminal configuration to Operators only. Contact an Operator for assistance.\n\nIf you are the World Owner, set your permission level to Operator for access.`)
@@ -38,4 +70,4 @@ world.beforeEvents.worldInitialize.subscribe(eventData => {
             }
         }
     })
-});
+});*/

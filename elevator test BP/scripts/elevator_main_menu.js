@@ -1,14 +1,16 @@
-import { world, system } from '@minecraft/server';
+import { world, system, PlayerPermissionLevel } from '@minecraft/server';
 import { ActionFormData, ModalFormData } from "@minecraft/server-ui";
 
 
 /** 
  * TODO:
  * - "Remember Elevator" DONE
- * - Admin privileges (only admins can edit & select floor)
+ * - Admin privileges (only admins can edit & select floor) DONE
  * - Elevator tags
  * - Elevator wrenches to set settings for each elevator entity (entity tags)
  * - Customizable elevator speeds
+ * - Send text message output (italics) [player: action] DONE
+ * - Delete elevator function
  * */ 
 
 
@@ -16,13 +18,17 @@ let elevator_name = []
 let elevator_floor_name = []
 let elevator_floor_level = []
 
+function sendActionOutput(player, message) {
+    player.onScreenDisplay.setActionBar(message);
+}
+
 export function openInitMenu(player, total_elevator_number, block) {
     const initMenu = new ActionFormData()
         .title(`Hello!`)
-        .body(`test`)
-        .button(`Set up this Terminal`)
-        .button(`Add/Edit Elevators`)
-        //.toggle(`Only Operators can change Elevator settings`, false);
+        .body(`To bind this Terminal to an Elevator, "Set up this Terminal", select an Elevator, and this Terminal will open the list of floors for that Elevator!`)
+        .button(`Set up this Terminal`, "textures/ui/icon_book_writable")
+        .button(`Add/Edit Elevators`, "textures/ui/editIcon")
+        .button(`Permission Settings`, "textures/ui/permissions_op_crown")
     initMenu.show(player).then(
         (response) => {
             switch (response.selection) {
@@ -30,14 +36,36 @@ export function openInitMenu(player, total_elevator_number, block) {
                 case 1:
                     showList(player, total_elevator_number, response.selection, block);
                     break;
-                //case 2:
-                    // toggle
-                    //if (response.formValues[2] === true) {
-                    // set dynamic property
-                    //break;
+                case 2:
+                    if (player.playerPermissionLevel === PlayerPermissionLevel.Operator) {
+                        permissionSettings(player);
+                    } else {
+                        const errorMenu = new ActionFormData()
+                            .title(`Wait!`)
+                            .body(`You are not an Operator. If you enable these settings, you will lose access to admin priviledges for Elevators.\n\nAre you the World Owner? Set your permission level to Operator to stop displaying this warning.`)
+                            .button(`Ok`)
+                        errorMenu.show(player).then(response => { permissionSettings(player); })
+                    }
+                    break;
                 default:
                     world.sendMessage("hi")
                     return;
+            }
+        }
+    )
+}
+
+function permissionSettings(player) {
+    const permissionMenu = new ModalFormData()
+        .title(`Permission Settings`)
+        .toggle(`Only Operators can change Elevator settings`, {defaultValue: JSON.parse(world.getDynamicProperty("honkit26113:elevator_settings_op_only"))})
+        .toggle(`Only Operators can use Elevators`, {defaultValue: JSON.parse(world.getDynamicProperty("honkit26113:elevator_usage_op_only"))})
+    permissionMenu.show(player).then(
+        (response) => {
+            world.setDynamicProperty("honkit26113:elevator_settings_op_only", JSON.stringify(response.formValues[0]));
+            world.setDynamicProperty("honkit26113:elevator_usage_op_only", JSON.stringify(response.formValues[1]));
+            if (player.playerPermissionLevel !== PlayerPermissionLevel.Operator) {
+                world.sendMessage(`§o§i[${player.name}: Changed Elevator access settings]§r`)
             }
         }
     )
@@ -83,6 +111,7 @@ function showList(player, total_elevator_number, actionNumber, block) {
                 case 0: // select elevator to focus terminal on
                     world.setDynamicProperty(`honkit26113:terminal${JSON.stringify(block.location)}`, response.selection + 1);
                     world.sendMessage(`p: ${world.getDynamicProperty(`honkit26113:terminal${JSON.stringify(block.location)}`)}`)
+                    sendActionOutput(player, `Terminal bound to ${elevator_name[response.selection+1]}`)
                     break;
                 case 1: // edit elevator properties (can also choose floor to edit)
                     open_submenu(player, response.selection, block, 1);
@@ -144,7 +173,7 @@ export function open_submenu(player, elevator_code, block, actionNumber) {
     world.sendMessage(`${world.getDynamicProperty(`honkit26113:elevator_floor_names${elevator_code}`)}`)
 
     const submenu = new ActionFormData()
-    if (elevator_name[elevator_code] === undefined) {
+    if (!elevator_name[elevator_code]) {
         elevator_name[elevator_code] = `New Elevator`
     };
     submenu.title(`Select Floor for ${elevator_name[elevator_code]}`)
@@ -181,20 +210,43 @@ export function open_submenu(player, elevator_code, block, actionNumber) {
                 }
             } else {
                 if (submenu_response.selection == 0) {
-                    // TODO: CHECK FOR PERMISSION LEVEL
-                    openInitMenu(player, world.getDynamicProperty("honkit26113:total_elevator_number"), block)
-                    return;
+                    if (player.playerPermissionLevel === PlayerPermissionLevel.Operator || !JSON.parse(world.getDynamicProperty("honkit26113:elevator_settings_op_only"))) {
+                        openInitMenu(player, world.getDynamicProperty("honkit26113:total_elevator_number"), block);
+                    } else {
+                        const errorMenu = new ActionFormData()
+                            .title(`Oops!`)
+                            .body(`An Operator has restricted Elevator Terminal configuration to Operators only. Contact an Operator for assistance.\n\nIf you are the World Owner, set your permission level to Operator for access.`)
+                            .button(`Ok`)
+                        errorMenu.show(player).then(
+                            response => {
+                                return;
+                            }
+                        )
+                    }
                 } else {
                     world.sendMessage(`Button no. ${submenu_response.selection}`)
                     
-                    if (world.getDynamicProperty(`honkit26113:elevator_floor_levels${elevator_code}`) === undefined) {
-                        elevator_floor_level = [0]
+                    if (JSON.parse(world.getDynamicProperty("honkit26113:elevator_usage_op_only")) && player.playerPermissionLevel !== PlayerPermissionLevel.Operator) {
+                        const errorMenu = new ActionFormData()
+                            .title(`Oops!`)
+                            .body(`An Operator has restricted Elevator usage to Operators only. Contact an Operator for assistance.\n\nIf you are the World Owner, set your permission level to Operator for access.`)
+                            .button(`Ok`)
+                        errorMenu.show(player).then(
+                            response => {
+                                return;
+                            }
+                        )
                     } else {
-                        elevator_floor_level = JSON.parse(world.getDynamicProperty(`honkit26113:elevator_floor_levels${elevator_code}`));
-                    }
+                        if (world.getDynamicProperty(`honkit26113:elevator_floor_levels${elevator_code}`) === undefined) {
+                            elevator_floor_level = [0]
+                        } else {
+                            elevator_floor_level = JSON.parse(world.getDynamicProperty(`honkit26113:elevator_floor_levels${elevator_code}`));
+                        }
 
-                    // Move elevator to destination floor
-                    move_elevator(elevator_floor_level[submenu_response.selection], block);
+                        // Move elevator to destination floor
+                        move_elevator(elevator_floor_level[submenu_response.selection], block);
+                        sendActionOutput(player, `Sent elevator to floor ${elevator_floor_name[submenu_response.selection]}`)
+                    }
                 }
             }
         }
@@ -211,9 +263,9 @@ export function open_floor_details(player, elevator_code, floor, block) {
 
     const floor_details = new ModalFormData()
         .title(`${elevator_floor_name[floor]} Properties`)
-        .textField('Floor Name', '', `${elevator_floor_name[floor]}`)
-        .textField('Floor Y Level', 'Integers Only', JSON.stringify(elevator_floor_level[floor]))
-        .toggle('Send the elevator here', true)
+        .textField('Floor Name', '', {defaultValue: `${elevator_floor_name[floor]}`})
+        .textField('Floor Y Level', 'Integers Only', {defaultValue: JSON.stringify(elevator_floor_level[floor])})
+        .toggle('Send the elevator here', {defaultValue: true})
         .show(player)
         .then(
             (floor_response) => {
@@ -224,8 +276,8 @@ export function open_floor_details(player, elevator_code, floor, block) {
                 world.sendMessage(`name ${elevator_floor_name[elevator_code]} level list${elevator_floor_level}`)
                 world.sendMessage(`name list ${JSON.stringify(elevator_floor_name)}`)
 
-                world.setDynamicProperty(`honkit26113:elevator_floor_names${elevator_code}`,JSON.stringify(elevator_floor_name))
-                world.setDynamicProperty(`honkit26113:elevator_floor_levels${elevator_code}`,JSON.stringify(elevator_floor_level))
+                world.setDynamicProperty(`honkit26113:elevator_floor_names${elevator_code}`, JSON.stringify(elevator_floor_name))
+                world.setDynamicProperty(`honkit26113:elevator_floor_levels${elevator_code}`, JSON.stringify(elevator_floor_level))
 
                 let destination_level = 0;
                 if (floor_response.formValues[2] === true) {
@@ -235,6 +287,7 @@ export function open_floor_details(player, elevator_code, floor, block) {
                     }
                     destination_level = elevator_floor_level[floor];
                     move_elevator(destination_level, block);
+                    sendActionOutput(player, `Sent elevator to floor ${elevator_floor_name[floor]}`)
                 }
 
                 //world.sendMessage(`names: ${JSON.stringify(world.getDynamicProperty(`honkit26113:elevator_floor_names${elevator_code}`))}`)
@@ -247,13 +300,14 @@ export function open_floor_details(player, elevator_code, floor, block) {
 export function edit_elevator_properties(player, elevator_code) {
     const elevator_properties_panel = new ModalFormData()
         .title(`Edit ${elevator_name[elevator_code]}`)
-        .textField('Elevator Name', '', elevator_name[elevator_code])
+        .textField('Elevator Name', '', {defaultValue: elevator_name[elevator_code]})
+        .toggle(`Delete this elevator. §cThis action cannot be reversed!§r`, {defaultValue: false})
         .show(player)
         .then(
             (edit_response) => {
                 elevator_name[elevator_code] = edit_response.formValues[0]
                 world.setDynamicProperty("honkit26113:elevator_names",JSON.stringify(elevator_name))
-                world.sendMessage(`Saved`)
+                sendActionOutput(player, `Changes saved`)
 
                 world.sendMessage(`name is: ${elevator_name[elevator_code]}`)
                 world.sendMessage(`dynamic property: ${world.getDynamicProperty("honkit26113:elevator_names")}`)

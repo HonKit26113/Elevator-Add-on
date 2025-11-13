@@ -1,18 +1,16 @@
 // This file was modified by HonKit26113 (@HonKit1103). Do not distribute without permission.
 {
-  "format_version": "1.21.20",
+  "format_version": "1.21.120",
   "minecraft:block": {
     "description": {
       "identifier": "honkit26113:elevator_terminal",
       "menu_category": {
         "category": "items",
-        "group": "none"
+        "group": "minecraft:itemGroup.none"
       }
     },
     "components": {
-      "minecraft:custom_components": [
-        "honkit26113:on_interact"
-      ],
+      "honkit26113:terminal_interact": {},
       "minecraft:geometry": "minecraft:geometry.full_block",
       "minecraft:destructible_by_mining": {
         "seconds_to_destroy": 3
