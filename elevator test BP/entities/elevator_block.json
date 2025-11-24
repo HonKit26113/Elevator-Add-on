@@ -6,7 +6,20 @@
       "runtime_identifier": "minecraft:happy_ghast",
       "is_spawnable": true,
       "is_summonable": true, // change to false
-      "is_experimental": false
+      "is_experimental": false,
+      "properties": {
+        "honkit26113:elevator_id": {
+          "type": "int",
+          "default": 0,
+          "range": [0, 1024],
+          "client_sync": true
+        }
+      }
+    },
+    "component_groups": {
+      "instant_despawn": {
+        "minecraft:instant_despawn": {}
+      }
     },
     "components": {
       "minecraft:type_family": {
@@ -45,7 +58,36 @@
         "has_collision": true,
         "has_gravity": false
       },
-      "minecraft:is_stackable": {}
+      "minecraft:is_stackable": {},
+      "minecraft:variant": {
+        "value": 0
+      },
+      "minecraft:interact": {
+        "interactions": [
+          {
+            "on_interact": {
+              "filters": {
+                "all_of": [
+                  { "test": "is_family", "subject" : "other", "value": "player"},
+                  { "test": "has_equipment", "domain": "hand", "subject": "other", "value": "honkit26113:elevator_wrench"}
+                ]
+              },
+              "event": "honkit26113:wrench_used"
+            },
+            "use_item": false,
+            "interact_text": "action.interact.configure"
+          }
+        ]
+      }
+    },
+    "events": {
+      "instant_despawn": {
+        "add": {
+          "component_groups": [
+            "instant_despawn"
+          ]
+        }
+      }
     }
   }
 }

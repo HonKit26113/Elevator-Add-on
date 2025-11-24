@@ -5,8 +5,7 @@
     "description": {
       "identifier": "honkit26113:elevator_terminal",
       "menu_category": {
-        "category": "items",
-        "group": "minecraft:itemGroup.none"
+        "category": "equipment"
       }
     },
     "components": {

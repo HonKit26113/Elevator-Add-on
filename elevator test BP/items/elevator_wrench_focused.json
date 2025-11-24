@@ -1,0 +1,22 @@
+// This file was modified by HonKit26113 (@HonKit1103). Do not distribute without permission.
+{
+  "format_version": "1.21.120",
+  "minecraft:item": {
+    "description": {
+      "identifier": "honkit26113:elevator_wrench_focused",
+      "menu_category": {
+        "category": "none",
+        "group": "minecraft:itemGroup.none"
+      }
+    },
+    "components": {
+      "honkit26113:wrench_open_menu": {},
+      "honkit26113:wrench_use": {},
+		  "minecraft:icon": "honkit26113:elevator_wrench",
+      "minecraft:hand_equipped": true,
+      "minecraft:can_destroy_in_creative": false,
+      "minecraft:glint": true,
+      "minecraft:max_stack_size": 1
+    }
+  }
+}

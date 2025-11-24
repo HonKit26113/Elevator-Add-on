@@ -2,6 +2,8 @@ import { world, system, PlayerPermissionLevel } from '@minecraft/server';
 import { ActionFormData } from "@minecraft/server-ui";
 import { openInitMenu, open_submenu } from './elevator_main_menu';
 
+// clear dynamic properties debug stick
+// note: this will clear ALL dynamic properties, not just dp's from the elevator add-on!
 /*world.afterEvents.itemUse.subscribe((data) => {
     let destination_level = 0;
 	const player = data.source;
@@ -15,15 +17,12 @@ import { openInitMenu, open_submenu } from './elevator_main_menu';
 /** @type {import("@minecraft/server").BlockCustomComponent} */
 const TerminalInteractComponent = {
     onPlayerInteract({ block, player }, {}) {
-        if (world.getDynamicProperty("honkit26113:total_elevator_number") === undefined) {
-            world.setDynamicProperty("honkit26113:total_elevator_number", 0)
-        }
         const is_focused = world.getDynamicProperty(`honkit26113:terminal${JSON.stringify(block.location)}`)
         if (is_focused) {
             world.sendMessage(`pew: ${world.getDynamicProperty(`honkit26113:terminal${JSON.stringify(block.location)}`)}`)
             open_submenu(player, is_focused, block, 2);
         } else if (player.playerPermissionLevel === PlayerPermissionLevel.Operator || !JSON.parse(world.getDynamicProperty("honkit26113:elevator_settings_op_only"))) {
-            openInitMenu(player, world.getDynamicProperty("honkit26113:total_elevator_number"), block);
+            openInitMenu(player, block);
         } else {
             const errorMenu = new ActionFormData()
                 .title(`Oops!`)

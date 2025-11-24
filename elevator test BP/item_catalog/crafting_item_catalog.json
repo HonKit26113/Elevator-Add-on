@@ -1,0 +1,35 @@
+{
+   "format_version": "1.21.60",
+   "minecraft:crafting_items_catalog": {
+      "categories": [
+         {
+            "category_name": "construction",
+            "groups": []
+         },
+         {
+            "category_name": "equipment",
+            "groups": [
+               {
+                  "group_identifier": {
+                     "icon": "honkit26113:elevator_block",
+                     "name": "honkit26113:itemGroup.elevators"
+                  },
+                  "items": [
+                     "honkit26113:elevator_block",
+                     "honkit26113:elevator_terminal",
+                     "honkit26113:elevator_wrench"
+                  ]
+               }
+            ]
+         },
+         {
+            "category_name": "items",
+            "groups": []
+         },
+         {
+            "category_name": "nature",
+            "groups": []
+         }
+      ]
+   }
+}
