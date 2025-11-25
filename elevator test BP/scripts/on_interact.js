@@ -14,9 +14,21 @@ import { openInitMenu, open_submenu } from './elevator_main_menu';
     }
 });*/
 
+export function noPermsErrorMenu(player) {
+    const errorMenu = new ActionFormData()
+        .title(`Oops!`)
+        .body(`An Operator has restricted this action to Operators only. Contact an Operator for assistance.\n\nIf you are the World Owner, set your permission level to Operator for access.`)
+        .button(`Ok`)
+    return errorMenu.show(player).then(
+        response => {
+            return;
+        }
+    )
+}
+
 /** @type {import("@minecraft/server").BlockCustomComponent} */
 const TerminalInteractComponent = {
-    onPlayerInteract({ block, player }, {}) {
+    async onPlayerInteract({ block, player }, {}) {
         const is_focused = world.getDynamicProperty(`honkit26113:terminal${JSON.stringify(block.location)}`)
         if (is_focused) {
             world.sendMessage(`pew: ${world.getDynamicProperty(`honkit26113:terminal${JSON.stringify(block.location)}`)}`)
@@ -24,15 +36,7 @@ const TerminalInteractComponent = {
         } else if (player.playerPermissionLevel === PlayerPermissionLevel.Operator || !JSON.parse(world.getDynamicProperty("honkit26113:elevator_settings_op_only"))) {
             openInitMenu(player, block);
         } else {
-            const errorMenu = new ActionFormData()
-                .title(`Oops!`)
-                .body(`An Operator has restricted Elevator Terminal configuration to Operators only. Contact an Operator for assistance.\n\nIf you are the World Owner, set your permission level to Operator for access.`)
-                .button(`Ok`)
-            errorMenu.show(player).then(
-                response => {
-                    return;
-                }
-            )
+            await noPermsErrorMenu(player);
         }
     },
 };

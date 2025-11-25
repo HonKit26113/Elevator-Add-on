@@ -12,9 +12,32 @@ import { sendActionOutput, showList } from './elevator_main_menu';
     }
 });*/
 
+const noPerms = "You don't have permission to do that!";
+
+/**
+ * determines if the player has permissions to use wrenches
+ * @param {Player} player 
+ * @returns {boolean}
+ */
+function isWrenchOperator(player) {
+    let opOnly = world.getDynamicProperty("honkit26113:wrench_usage_op_only");
+    if (opOnly === undefined) {
+        opOnly = "false";
+        world.setDynamicProperty("honkit26113:wrench_usage_op_only", opOnly);
+    }
+    if (JSON.parse(opOnly)) { // if op only, check if player is op
+        return (player.playerPermissionLevel === PlayerPermissionLevel.Operator);
+    }
+    return true;
+}
+
 /** @type {import("@minecraft/server").ItemCustomComponent} */
 const WrenchOpenMenuComponent = {
     async onUseOn({ source }, {}) {
+        if (!isWrenchOperator(source)) {
+            sendActionOutput(source, noPerms);
+            return;
+        }
         const elevatorId = await showList(source, 3, null);
         switch (elevatorId) {
             case undefined:
@@ -34,7 +57,12 @@ const WrenchOpenMenuComponent = {
 
 /** @type {import("@minecraft/server").ItemCustomComponent} */
 const WrenchUseComponent = {
-    onHitEntity({attackingEntity, hitEntity, itemStack}, {}) {
+    async onHitEntity({attackingEntity, hitEntity, itemStack}, {}) {
+        if (hitEntity.typeId !== "honkit26113:elevator_block") return;
+        if (!isWrenchOperator(attackingEntity)) {
+            sendActionOutput(attackingEntity, noPerms);
+            return;
+        }
         if (attackingEntity.isSneaking) {
             hitEntity.triggerEvent("instant_despawn");
             if (attackingEntity.getGameMode() !== GameMode.Creative) {
@@ -70,33 +98,3 @@ system.beforeEvents.startup.subscribe(({ itemComponentRegistry }) => {
     itemComponentRegistry.registerCustomComponent("honkit26113:wrench_open_menu", WrenchOpenMenuComponent);
     itemComponentRegistry.registerCustomComponent("honkit26113:wrench_use", WrenchUseComponent);
 });
-
-
-// Custom Components v1
-/*world.beforeEvents.worldInitialize.subscribe(eventData => {
-    eventData.blockComponentRegistry.registerCustomComponent('honkit26113:on_interact', {
-        onPlayerInteract(e) {
-            const { player, block } = e;
-            if (world.getDynamicProperty("honkit26113:total_elevator_number") === undefined) {
-                world.setDynamicProperty("honkit26113:total_elevator_number", 0)
-            }
-            const is_focused = world.getDynamicProperty(`honkit26113:terminal${JSON.stringify(block.location)}`)
-            if (is_focused) {
-                world.sendMessage(`pew: ${world.getDynamicProperty(`honkit26113:terminal${JSON.stringify(block.location)}`)}`)
-                open_submenu(player, is_focused, block, 2);
-            } else {//if (player.playerPermissionLevel === "Operator") {
-                openInitMenu(player, world.getDynamicProperty("honkit26113:total_elevator_number"), block);
-            } /*else {
-                const errorMenu = new ActionFormData()
-                    .title(`Oops!`)
-                    .body(`An Operator has restricted Elevator Terminal configuration to Operators only. Contact an Operator for assistance.\n\nIf you are the World Owner, set your permission level to Operator for access.`)
-                    .button(`Ok`)
-                errorMenu.show(player).then(
-                    response => {
-                        return;
-                    }
-                )
-            }
-        }
-    })
-});*/

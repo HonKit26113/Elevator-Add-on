@@ -1,0 +1,42 @@
+{
+    "elevators": [
+        {
+            "name": "elevator1",
+            "texture": "path",
+            "speed": 1,
+            "floors": [
+                {
+                    "name": "1/f",
+                    "level": 63
+                },
+                {
+                    "name": "2/f",
+                    "level": 67
+                },
+                {
+                    "name": "3/f",
+                    "level": 71
+                }
+            ]
+        },
+        {
+            "name": "elevator2",
+            "texture": "stone",
+            "speed": 1,
+            "floors": [
+                {
+                    "name": "1/f",
+                    "level": 70
+                },
+                {
+                    "name": "2/f",
+                    "level": 80
+                },
+                {
+                    "name": "3/f",
+                    "level": 90
+                }
+            ]
+        }
+    ]
+}
