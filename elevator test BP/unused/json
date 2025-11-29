@@ -1,6 +1,7 @@
 {
     "elevators": [
         {
+            "id": 1,
             "name": "elevator1",
             "texture": "path",
             "speed": 1,
@@ -20,6 +21,7 @@
             ]
         },
         {
+            "id": 2,
             "name": "elevator2",
             "texture": "stone",
             "speed": 1,

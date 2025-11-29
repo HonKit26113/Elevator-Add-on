@@ -13,6 +13,21 @@
           "default": 0,
           "range": [0, 1024],
           "client_sync": true
+        },
+        "honkit26113:texture": {
+          "type": "enum", 
+          "values": [ // This array MUST match elevatorTextures in script
+            "iron_block",
+            "smooth_stone",
+            "cobblestone",
+            "oak_planks",
+            "spruce_planks",
+            "birch_planks",
+            "grass_block",
+            "sand"
+          ], 
+          "default": "iron_block",
+          "client_sync": true
         }
       }
     },

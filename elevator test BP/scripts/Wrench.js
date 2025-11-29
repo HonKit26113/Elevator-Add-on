@@ -1,18 +1,7 @@
 import { world, system, PlayerPermissionLevel, GameMode, ItemStack } from '@minecraft/server';
-//import { ActionFormData } from "@minecraft/server-ui";
-import { sendActionOutput, showList } from './elevator_main_menu';
+import { getElevatorName, sendActionOutput, showList } from './elevator_main_menu';
 
-/*world.afterEvents.itemUse.subscribe((data) => {
-    let destination_level = 0;
-	const player = data.source;
-	const item = player.getComponent("minecraft:inventory").container.getItem(player.selectedSlotIndex);
-    if (item.typeId === "minecraft:breeze_rod") {
-        world.clearDynamicProperties();
-        world.sendMessage("done");
-    }
-});*/
-
-const noPerms = "You don't have permission to do that!";
+const NO_PERMS = "You don't have permission to do that!";
 
 /**
  * determines if the player has permissions to use wrenches
@@ -33,9 +22,9 @@ function isWrenchOperator(player) {
 
 /** @type {import("@minecraft/server").ItemCustomComponent} */
 const WrenchOpenMenuComponent = {
-    async onUseOn({ source }, {}) {
+    async onUse({ source }, {}) {
         if (!isWrenchOperator(source)) {
-            sendActionOutput(source, noPerms);
+            sendActionOutput(source, NO_PERMS);
             return;
         }
         const elevatorId = await showList(source, 3, null);
@@ -46,8 +35,8 @@ const WrenchOpenMenuComponent = {
                 sendActionOutput(source, `Wrench unbound`);
                 break;
             default:
-                const elevator_name = JSON.parse(world.getDynamicProperty(`honkit26113:elevator_names`));
-                sendActionOutput(source, `Wrench bound to ${elevator_name[elevatorId]}`);
+                const elevator_name = getElevatorName(elevatorId);
+                sendActionOutput(source, `Wrench bound to ${elevator_name}`);
                 break; 
         }
         world.sendMessage(`eid: ${elevatorId}`)
@@ -60,7 +49,7 @@ const WrenchUseComponent = {
     async onHitEntity({attackingEntity, hitEntity, itemStack}, {}) {
         if (hitEntity.typeId !== "honkit26113:elevator_block") return;
         if (!isWrenchOperator(attackingEntity)) {
-            sendActionOutput(attackingEntity, noPerms);
+            sendActionOutput(attackingEntity, NO_PERMS);
             return;
         }
         if (attackingEntity.isSneaking) {
@@ -73,7 +62,7 @@ const WrenchUseComponent = {
         const elevatorId = itemStack.getDynamicProperty("honkit26113:wrench_bound_to");
         world.sendMessage(`${typeof(elevatorId)}`)
         hitEntity.setProperty("honkit26113:elevator_id", elevatorId);
-        sendActionOutput(attackingEntity, `Elevator Block bound to ${elevatorId}`);
+        sendActionOutput(attackingEntity, `Elevator Block bound to ${getElevatorName(elevatorId)}`);
     }
 }
 

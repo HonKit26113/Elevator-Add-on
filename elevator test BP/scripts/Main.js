@@ -1,3 +1,4 @@
 import "./elevator_main_menu.js";
-import "./on_interact.js";
-import "./onUse.js";
+import "./ElevatorTerminal.js";
+import "./Wrench.js";
+import "./Commands.js";
