@@ -1,5 +1,5 @@
 import { world, system, PlayerPermissionLevel, GameMode, ItemStack } from '@minecraft/server';
-import { getElevatorName, sendActionOutput, showList } from './elevator_main_menu';
+import { getElevatorName, getElevatorTexture, sendActionOutput, showList } from './elevator_main_menu';
 
 const NO_PERMS = "You don't have permission to do that!";
 
@@ -39,7 +39,7 @@ const WrenchOpenMenuComponent = {
                 sendActionOutput(source, `Wrench bound to ${elevator_name}`);
                 break; 
         }
-        world.sendMessage(`eid: ${elevatorId}`)
+        //world.sendMessage(`eid: ${elevatorId}`)
         giveWrench(source, elevatorId);
     }
 };
@@ -47,7 +47,7 @@ const WrenchOpenMenuComponent = {
 /** @type {import("@minecraft/server").ItemCustomComponent} */
 const WrenchUseComponent = {
     async onHitEntity({attackingEntity, hitEntity, itemStack}, {}) {
-        if (hitEntity.typeId !== "honkit26113:elevator_block") return;
+        if (attackingEntity.typeId !== "minecraft:player" || hitEntity.typeId !== "honkit26113:elevator_block") return;
         if (!isWrenchOperator(attackingEntity)) {
             sendActionOutput(attackingEntity, NO_PERMS);
             return;
@@ -60,14 +60,20 @@ const WrenchUseComponent = {
             return;
         }
         const elevatorId = itemStack.getDynamicProperty("honkit26113:wrench_bound_to");
-        world.sendMessage(`${typeof(elevatorId)}`)
+        //world.sendMessage(`${typeof(elevatorId)}`)
         hitEntity.setProperty("honkit26113:elevator_id", elevatorId);
+        hitEntity.setProperty("honkit26113:texture", getElevatorTexture(elevatorId));
+        //world.sendMessage(`${elevatorTextures[getElevatorTexture(elevatorId)]}`);
+        //world.sendMessage(`${hitEntity.getProperty("honkit26113:texture")}`);
+        if (attackingEntity.playerPermissionLevel !== PlayerPermissionLevel.Operator) {
+            world.sendMessage(`§o§i[${attackingEntity.name}: Bound Elevator Block to ${getElevatorName(elevatorId)}]§r`);
+        }
         sendActionOutput(attackingEntity, `Elevator Block bound to ${getElevatorName(elevatorId)}`);
     }
 }
 
 /**
- * gives `player` a wrench bound to an elevator. `elevatorId` of `0` will give an unbound wrench.
+ * Gives `player` a wrench bound to an elevator. `elevatorId` of `0` will give an unbound wrench.
  * @param {Player} player 
  * @param {Integer} elevatorId 
  */

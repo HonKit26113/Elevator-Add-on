@@ -1,0 +1,25 @@
+{
+	"format_version": "1.8.0",
+	"render_controllers": {
+		"controller.render.honkit26113_elevator_block": {
+			"arrays": {
+				"textures": {
+					"Array.skins": [ // The ordering MUST match the elevatorTextures array
+						"Texture.iron_block",
+						"Texture.smooth_stone",
+						"Texture.cobblestone",
+						"Texture.glass",
+						"Texture.oak_planks",
+						"Texture.spruce_planks",
+						"Texture.birch_planks",
+						"Texture.grass_block",
+						"Texture.sand"
+					]
+				}
+			},
+			"geometry": "Geometry.default",
+			"materials": [ { "*": "Material.default" } ],
+			"textures": [ "Array.skins[q.property('honkit26113:texture')]" ]
+		}
+	}
+}

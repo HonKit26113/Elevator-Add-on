@@ -4,16 +4,24 @@
     "description": {
       "identifier": "honkit26113:elevator_block",
       "materials": {
-        "default": "boat"
+        "default": "map_decoration"
       },
       "textures": {
-        "default": "textures/blocks/iron_block"
+        "iron_block": "textures/blocks/iron_block",
+        "smooth_stone": "textures/blocks/stone_slab_top",
+        "cobblestone": "textures/blocks/cobblestone",
+        "glass": "textures/blocks/glass",
+        "oak_planks": "textures/blocks/planks_oak",
+        "spruce_planks": "textures/blocks/planks_spruce",
+        "birch_planks": "textures/blocks/planks_birch",
+        "grass_block": "textures/blocks/grass_carried",
+        "sand": "textures/blocks/sand"
       },
       "geometry": {
         "default": "geometry.honkit26113_elevator"
       },
       "render_controllers": [
-        "controller.render.default"
+        "controller.render.honkit26113_elevator_block"
       ],
       "spawn_egg": {
         "base_color": "#7CA5F4",
