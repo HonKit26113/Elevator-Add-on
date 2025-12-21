@@ -1,24 +1,27 @@
 import { world, system, PlayerPermissionLevel, GameMode, ItemStack, Player, EquipmentSlot } from '@minecraft/server';
 import { getElevatorName, getElevatorTexture, sendActionOutput, showList } from './Elevator';
+
 const NO_PERMS = "You don't have permission to do that!";
+
 /**
  * determines if the player has permissions to use wrenches
- * @param {Player} player
+ * @param {Player} player 
  * @returns {boolean}
  */
-function isWrenchOperator(player) {
+function isWrenchOperator(player: Player): boolean {
     let opOnly = world.getDynamicProperty("honkit26113:wrench_usage_op_only");
     if (opOnly === undefined) {
         opOnly = "false";
         world.setDynamicProperty("honkit26113:wrench_usage_op_only", opOnly);
     }
-    if (JSON.parse(opOnly)) { // if op only, check if player is op
+    if (JSON.parse(opOnly as string)) { // if op only, check if player is op
         return (player.playerPermissionLevel === PlayerPermissionLevel.Operator);
     }
     return true;
 }
+
 /** @type {import("@minecraft/server").ItemCustomComponent} */
-const WrenchOpenMenuComponent = {
+const WrenchOpenMenuComponent: import("@minecraft/server").ItemCustomComponent = {
     async onUse({ source }, {}) {
         if (!isWrenchOperator(source)) {
             sendActionOutput(source, NO_PERMS);
@@ -34,19 +37,19 @@ const WrenchOpenMenuComponent = {
             default:
                 const elevator_name = getElevatorName(elevatorId);
                 sendActionOutput(source, `Wrench bound to ${elevator_name}`);
-                break;
+                break; 
         }
         //world.sendMessage(`eid: ${elevatorId}`)
         giveWrench(source, elevatorId);
     }
 };
+
 /** @type {import("@minecraft/server").ItemCustomComponent} */
-const WrenchUseComponent = {
-    async onHitEntity({ attackingEntity, hitEntity, itemStack }, {}) {
-        if (!(attackingEntity instanceof Player) || hitEntity.typeId !== "honkit26113:elevator_block")
-            return;
-        if (!isWrenchOperator(attackingEntity)) {
-            sendActionOutput(attackingEntity, NO_PERMS);
+const WrenchUseComponent: import("@minecraft/server").ItemCustomComponent = {
+    async onHitEntity({attackingEntity, hitEntity, itemStack}, {}) {
+        if (!(attackingEntity instanceof Player) || hitEntity.typeId !== "honkit26113:elevator_block") return;
+        if (!isWrenchOperator(attackingEntity as Player)) {
+            sendActionOutput(attackingEntity as Player, NO_PERMS);
             return;
         }
         if (attackingEntity.isSneaking) {
@@ -56,7 +59,7 @@ const WrenchUseComponent = {
             }
             return;
         }
-        const elevatorId = itemStack.getDynamicProperty("honkit26113:wrench_bound_to") ?? -1;
+        const elevatorId: number = itemStack.getDynamicProperty("honkit26113:wrench_bound_to") as number ?? -1;
         //world.sendMessage(`${typeof(elevatorId)}`)
         hitEntity.setProperty("honkit26113:elevator_id", elevatorId);
         hitEntity.setProperty("honkit26113:texture", getElevatorTexture(elevatorId));
@@ -67,26 +70,26 @@ const WrenchUseComponent = {
         }
         sendActionOutput(attackingEntity, `Elevator Block bound to ${getElevatorName(elevatorId)}`);
     }
-};
+}
+
 /**
  * Gives `player` a wrench bound to an elevator. `elevatorId` of `0` will give an unbound wrench.
- * @param {Player} player
- * @param {number} elevatorId
+ * @param {Player} player 
+ * @param {number} elevatorId 
  */
-function giveWrench(player, elevatorId) {
+function giveWrench(player: Player, elevatorId: number) {
     const equipment = player.getComponent('equippable');
     let wrench;
     if (elevatorId === 0) {
         wrench = new ItemStack("honkit26113:elevator_wrench");
-    }
-    else {
+    } else {
         wrench = new ItemStack("honkit26113:elevator_wrench_focused");
         wrench.setDynamicProperty("honkit26113:wrench_bound_to", elevatorId);
     }
     equipment.setEquipment(EquipmentSlot.Mainhand, wrench);
 }
+
 system.beforeEvents.startup.subscribe(({ itemComponentRegistry }) => {
     itemComponentRegistry.registerCustomComponent("honkit26113:wrench_open_menu", WrenchOpenMenuComponent);
     itemComponentRegistry.registerCustomComponent("honkit26113:wrench_use", WrenchUseComponent);
 });
-//# sourceMappingURL=Wrench.js.map

@@ -1,44 +1,48 @@
-import { world, system, PlayerPermissionLevel } from '@minecraft/server';
+import { world, system, PlayerPermissionLevel, Player } from '@minecraft/server';
 import { ActionFormData } from "@minecraft/server-ui";
 import { openInitMenu, openFloorsList } from './Elevator';
+
 // clear dynamic properties debug stick
 // note: this will clear ALL dynamic properties, not just dp's from the elevator add-on!
 /*world.afterEvents.itemUse.subscribe((data) => {
     let destination_level = 0;
-    const player = data.source;
-    const item = player.getComponent("minecraft:inventory").container.getItem(player.selectedSlotIndex);
+	const player = data.source;
+	const item = player.getComponent("minecraft:inventory").container.getItem(player.selectedSlotIndex);
     if (item.typeId === "minecraft:breeze_rod") {
         world.clearDynamicProperties();
         world.sendMessage("done");
     }
 });*/
-export async function noPermsErrorMenu(player) {
+
+export async function noPermsErrorMenu(player: Player) {
     const errorMenu = new ActionFormData()
         .title(`Oops!`)
         .body(`An Operator has restricted this action to Operators only. Contact an Operator for assistance.\n\nIf you are the World Owner, set your permission level to Operator for access.`)
-        .button(`Ok`);
+        .button(`Ok`)
     await errorMenu.show(player);
     return;
 }
+
 /** @type {import("@minecraft/server").BlockCustomComponent} */
-const TerminalInteractComponent = {
+const TerminalInteractComponent: import("@minecraft/server").BlockCustomComponent = {
     async onPlayerInteract({ block, player }, {}) {
-        const is_focused = world.getDynamicProperty(`honkit26113:terminal${JSON.stringify(block.location)}`);
+        const is_focused = world.getDynamicProperty(`honkit26113:terminal${JSON.stringify(block.location)}`)
         if (is_focused) {
-            world.sendMessage(`pew: ${world.getDynamicProperty(`honkit26113:terminal${JSON.stringify(block.location)}`)}`);
-            openFloorsList(player, is_focused, block, 2);
-        }
-        else if (player.playerPermissionLevel === PlayerPermissionLevel.Operator || !JSON.parse(world.getDynamicProperty("honkit26113:elevator_settings_op_only"))) {
+            world.sendMessage(`pew: ${world.getDynamicProperty(`honkit26113:terminal${JSON.stringify(block.location)}`)}`)
+            openFloorsList(player, is_focused as number, block, 2);
+        } else if (player.playerPermissionLevel === PlayerPermissionLevel.Operator || !JSON.parse(world.getDynamicProperty("honkit26113:elevator_settings_op_only") as string)) {
             openInitMenu(player, block);
-        }
-        else {
+        } else {
             await noPermsErrorMenu(player);
         }
     },
 };
+
 system.beforeEvents.startup.subscribe(({ blockComponentRegistry }) => {
     blockComponentRegistry.registerCustomComponent("honkit26113:terminal_interact", TerminalInteractComponent);
 });
+
+
 // Custom Components v1
 /*world.beforeEvents.worldInitialize.subscribe(eventData => {
     eventData.blockComponentRegistry.registerCustomComponent('honkit26113:on_interact', {
@@ -66,5 +70,4 @@ system.beforeEvents.startup.subscribe(({ blockComponentRegistry }) => {
             }
         }
     })
-});*/ 
-//# sourceMappingURL=ElevatorTerminal.js.map
+});*/

@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "target": "ES2021",
+    "lib": ["ES2021", "DOM"],
+    "module": "ES2022",
+    "moduleResolution": "node",
+    "noImplicitAny": true,
+    "removeComments": false,
+    "preserveConstEnums": true,
+    "sourceMap": true 
+  },
+  "files": [
+    "Commands.ts",
+    "Elevator.ts",
+    "ElevatorTerminal.ts",
+    "Wrench.ts"
+  ]
+}

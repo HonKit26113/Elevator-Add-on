@@ -1,5 +1,5 @@
 import { world, system, PlayerPermissionLevel, Player, Entity, Block } from '@minecraft/server';
-import { ActionFormData, ModalFormData, FormResponse } from "@minecraft/server-ui";
+import { ActionFormData, ModalFormData, FormResponse, ActionFormResponse, ModalFormResponse } from "@minecraft/server-ui";
 import { noPermsErrorMenu } from './ElevatorTerminal';
 
 
@@ -40,10 +40,10 @@ let elevatorJson;
 let elevatorData: ElevatorData;
 system.run(() => {
     elevatorJson = world.getDynamicProperty("honkit26113:elevator_data");
-    elevatorData = elevatorJson ? JSON.parse(elevatorJson) : emptyElevatorData;
+    elevatorData = elevatorJson ? JSON.parse(elevatorJson as string) : emptyElevatorData;
 })
-export const emptyElevatorData = { "elevators": [] };
-const newElevatorData = {
+export const emptyElevatorData: ElevatorData = { "elevators": [] };
+const newElevatorData: Elevator = {
     "id": -1,
     "name": "uninitialized",
     "texture": "iron_block",
@@ -148,7 +148,7 @@ function setElevatorName(elevatorId: number, newName: string): void {
  */
 function getElevatorById(targetId: number): Elevator {
     const elevators = elevatorData.elevators;
-    const elevatorObject = elevators.find(elevator => elevator.id === targetId);
+    const elevatorObject = elevators.find((elevator: Elevator) => elevator.id === targetId);
     if (!elevatorObject) {
         throw console.error("ElevatorObject returned undefined");
     }
@@ -195,7 +195,7 @@ function newFloor(elevatorId: number): number | undefined {
     }
 
     // 1. Define the structure for the new floor (must match your JSON schema)
-    const floorTemplate = {
+    const floorTemplate: ElevatorFloor = {
         name: "New Floor",
         level: null // Default Y level
     };
@@ -255,7 +255,7 @@ function newElevator(elevatorName: string): number {
  * @param {Number} index 
  */
 function deleteElevator(index: number) {
-    const indexToDelete = elevatorData.elevators.findIndex(e => e.id === index);
+    const indexToDelete = elevatorData.elevators.findIndex((e: Elevator) => e.id === index);
     elevatorData.elevators.splice(indexToDelete, 1);
     save();
 }
@@ -277,7 +277,7 @@ function deleteFloor(elevatorId: number, floorIndex: number) {
  */
 function isPropertyTrue(name: string): boolean {
     const property = world.getDynamicProperty(name);
-    return property === undefined ? false : JSON.parse(property);
+    return property === undefined ? false : JSON.parse(property as string);
 }
 
 /**
@@ -314,7 +314,7 @@ export function openInitMenu(player: Player, block: Block) {
         .button(`Add/Edit Elevators`, "textures/ui/editIcon")
         .button(`Permission Settings`, "textures/ui/permissions_op_crown");
     initMenu.show(player).then(
-        (response: FormResponse) => {
+        (response: ActionFormResponse) => {
             switch (response.selection) {
                 case 0:
                 case 1:
@@ -345,7 +345,7 @@ function permissionSettings(player: Player) {
         .toggle(`Only Operators can use Elevators`, {defaultValue: isPropertyTrue("honkit26113:elevator_usage_op_only")})
         .toggle(`Only Operators can use Wrenches to configure Elevator Blocks`, {defaultValue: isPropertyTrue("honkit26113:wrench_usage_op_only")});
     permissionMenu.show(player).then(
-        (response: FormResponse) => {
+        (response: ModalFormResponse) => {
             if (!response?.formValues) return;
             world.setDynamicProperty("honkit26113:elevator_settings_op_only", JSON.stringify(response.formValues[0]));
             world.setDynamicProperty("honkit26113:elevator_usage_op_only", JSON.stringify(response.formValues[1]));
@@ -389,7 +389,7 @@ const elevators = elevatorData.elevators;
         listMenu.button(elevator.name);
     }
 
-    return listMenu.show(player).then((response: FormResponse) => {
+    return listMenu.show(player).then((response: ActionFormResponse) => {
         if (response.selection === undefined) return;
         
         const selectionIndex = response.selection;
@@ -403,7 +403,7 @@ const elevators = elevatorData.elevators;
                 openFloorsList(player, newId, block, 1);
                 return;
             }
-            if (actionNumber === 3 && selectionIndex === (actionNumber === 1 ? 1 : 0)) {
+            if (actionNumber === 3 && selectionIndex === 0) {
                 // User pressed "Unbind this Wrench"
                 return 0; // Return 0 for unbind
             }
@@ -471,7 +471,7 @@ export function openFloorsList(player: Player, elevatorId: number, block:Block, 
     }
 
     submenu.show(player).then(
-        async (response: FormResponse) => {
+        async (response: ActionFormResponse) => {
             if (response.selection === undefined) return;
 
             // The index of the first floor button (always 1 in this structure)
@@ -545,14 +545,14 @@ function editFloorProperties(player: Player, elevatorId: number, floor: number, 
         .toggle('Send the elevator here', {defaultValue: true})
         .toggle(`Delete this floor. §cThis action cannot be undone!§r`, {defaultValue: false});
     floor_details.show(player).then(
-        (floor_response: FormResponse) => {
+        (floor_response: ModalFormResponse) => {
             if (floor_response.formValues === undefined) return;
             if (floor_response.formValues[3] === true) {
                 deleteFloor(elevatorId, floor);
                 sendActionOutput(player, `Changes saved`);
                 return;
             }
-            setFloorName(elevatorId, floor, floor_response.formValues[0]);
+            setFloorName(elevatorId, floor, floor_response.formValues[0] as string);
             setFloorLevel(elevatorId, floor, Number(floor_response.formValues[1]));
 
             world.sendMessage(`y level ${getFloorLevel(elevatorId, floor)}, floor no. ${floor}`);
@@ -599,11 +599,11 @@ function editElevatorProperties(player: Player, elevatorId: number) {
         .dropdown('Elevator Block Texture', elevatorTextures, {defaultValueIndex: thisElevatorTexture, tooltip: 'Texture for Elevator Blocks that are bound to this Elevator. For changes to apply, use a Wrench to bind Elevator Blocks again.'})
         .toggle(`Delete this elevator. §cThis action cannot be undone!§r`, {defaultValue: false});
     elevatorPropertiesPanel.show(player).then(
-        (response: FormResponse) => {
+        (response: ModalFormResponse) => {
             if (response?.formValues === undefined) return;
-            setElevatorName(elevatorId, response.formValues[0]);
-            setElevatorSpeed(elevatorId, response.formValues[1]);
-            setElevatorTexture(elevatorId, response.formValues[2]);
+            setElevatorName(elevatorId, response.formValues[0] as string);
+            setElevatorSpeed(elevatorId, response.formValues[1] as number);
+            setElevatorTexture(elevatorId, response.formValues[2] as number);
             if (response.formValues[3] === true) {
                 deleteElevator(elevatorId);
             }
@@ -645,7 +645,7 @@ export function move_elevator(destinationLevel: number, block: Block, elevatorTo
 }
 
 
-function* move(entity: Entity, destLevel: number, elevatorId: number) {
+function* move(entity: Entity, destLevel: number, elevatorId: number): Generator<void, void, void> {
     const THIS_ELEVATOR_SPEED = getElevatorSpeed(elevatorId);
     const destLevelAdjusted = Math.round(destLevel);
     let last_executed_tick = system.currentTick;
@@ -658,16 +658,15 @@ function* move(entity: Entity, destLevel: number, elevatorId: number) {
                 entity.teleport({ x: entity.location.x, y: entity.location.y-(0.1 * THIS_ELEVATOR_SPEED / 2), z: entity.location.z })
             }
             if (Math.abs(entity.location.y - destLevelAdjusted) < (0.1 * THIS_ELEVATOR_SPEED / 2)) {
-                const find_passengers = entity.dimension.getEntities({
-                    type: "minecraft:player",
+                const find_passengers = entity.dimension.getPlayers({
                     location: entity.location,
                     maxDistance: 3
                 })
                 for (const p of find_passengers) {
-                    p.playSound("honkit26113.elevator_arrive")
+                    p.playSound("honkit26113.elevator_arrive");
                 }
                 entity.teleport({x: entity.location.x, y: destLevel, z: entity.location.z});
-                return 0;
+                return;
             }
         }
         yield;
