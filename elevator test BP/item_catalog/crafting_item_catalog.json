@@ -11,12 +11,13 @@
             "groups": [
                {
                   "group_identifier": {
-                     "icon": "honkit26113:elevator_block",
+                     "icon": "honkit26113:elevator_terminal_panel",
                      "name": "honkit26113:itemGroup.elevators"
                   },
                   "items": [
                      "honkit26113:elevator_block",
                      "honkit26113:elevator_terminal",
+                     "honkit26113:elevator_terminal_panel",
                      "honkit26113:elevator_wrench"
                   ]
                }

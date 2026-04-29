@@ -1,0 +1,11 @@
+{
+	"resource_pack_name": "honkit26113_elevators",
+	"texture_name": "atlas.terrain",
+	"padding": 8,
+	"num_mip_levels": 4,
+	"texture_data": {
+		"elevator_block": { "textures": [ "textures/entity/elevator_block" ] },
+		"elevator_terminal": { "textures": [ "textures/blocks/elevator_terminal" ] },
+		"elevator_terminal_panel": { "textures": [ "textures/blocks/elevator_terminal_panel" ] }
+	}
+}

@@ -7,6 +7,7 @@
         "default": "map_decoration"
       },
       "textures": {
+        "default": "textures/entity/elevator_block",
         "iron_block": "textures/blocks/iron_block",
         "smooth_stone": "textures/blocks/stone_slab_top",
         "cobblestone": "textures/blocks/cobblestone",

@@ -1,0 +1,6 @@
+item.honkit26113:elevator_block=Elevator Platform
+tile.honkit26113:elevator_terminal.name=Elevator Terminal
+tile.honkit26113:elevator_terminal_panel.name=Elevator Terminal Panel
+item.honkit26113:elevator_wrench=Elevator Wrench
+item.honkit26113:elevator_wrench_focused=Elevator Wrench
+honkit26113:itemGroup.elevators=Elevator Items

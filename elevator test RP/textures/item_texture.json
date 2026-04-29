@@ -2,6 +2,6 @@
 {
 	"texture_data": {
 		"honkit26113:elevator_wrench": { "textures": [ "textures/items/honkit26113_elevator_wrench" ] },
-		"honkit26113:elevator_block": { "textures": [ "textures/items/honkit26113_elevator_block" ] }
+		"honkit26113:elevator_block": { "textures": [ "textures/entity/elevator_block" ] }
 	}
 }

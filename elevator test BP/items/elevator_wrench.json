@@ -10,6 +10,7 @@
     },
     "components": {
       "honkit26113:wrench_open_menu": {},
+      "minecraft:interact_button": true,
 		  "minecraft:icon": "honkit26113:elevator_wrench",
       "minecraft:hand_equipped": true,
       "minecraft:can_destroy_in_creative": false,

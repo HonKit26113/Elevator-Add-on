@@ -16,7 +16,7 @@ import { openInitMenu, openFloorsList } from './Elevator';
 
 export async function noPermsErrorMenu(player: Player) {
     const errorMenu = new ActionFormData()
-        .title(`Oops!`)
+        .title(`Permission Denied`)
         .body(`An Operator has restricted this action to Operators only. Contact an Operator for assistance.\n\nIf you are the World Owner, set your permission level to Operator for access.`)
         .button(`Ok`)
     await errorMenu.show(player);
@@ -28,7 +28,7 @@ const TerminalInteractComponent: import("@minecraft/server").BlockCustomComponen
     async onPlayerInteract({ block, player }, {}) {
         const is_focused = world.getDynamicProperty(`honkit26113:terminal${JSON.stringify(block.location)}`)
         if (is_focused) {
-            world.sendMessage(`pew: ${world.getDynamicProperty(`honkit26113:terminal${JSON.stringify(block.location)}`)}`)
+            //world.sendMessage(`pew: ${world.getDynamicProperty(`honkit26113:terminal${JSON.stringify(block.location)}`)}`)
             openFloorsList(player, is_focused as number, block, 2);
         } else if (player.playerPermissionLevel === PlayerPermissionLevel.Operator || !JSON.parse(world.getDynamicProperty("honkit26113:elevator_settings_op_only") as string)) {
             openInitMenu(player, block);

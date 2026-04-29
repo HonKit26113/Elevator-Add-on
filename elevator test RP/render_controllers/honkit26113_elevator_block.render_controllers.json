@@ -5,6 +5,7 @@
 			"arrays": {
 				"textures": {
 					"Array.skins": [ // The ordering MUST match the elevatorTextures array
+						"Texture.default",
 						"Texture.iron_block",
 						"Texture.smooth_stone",
 						"Texture.cobblestone",

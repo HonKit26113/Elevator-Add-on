@@ -16,7 +16,7 @@ function elevatorDataCommand(): CustomCommandResult {
     system.run(() => {
         const elevatorJson = world.getDynamicProperty("honkit26113:elevator_data");
         const elevatorData = elevatorJson ? JSON.parse(elevatorJson as string) : emptyElevatorData;
-        console.warn(JSON.stringify(elevatorData));
+        console.log(JSON.stringify(elevatorData));
     });
     return {
       status: CustomCommandStatus.Success

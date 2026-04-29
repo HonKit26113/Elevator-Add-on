@@ -1,0 +1,35 @@
+{
+	"format_version": "1.12.0",
+	"minecraft:geometry": [
+		{
+			"description": {
+				"identifier": "geometry.elevator_terminal_panel",
+				"texture_width": 32,
+				"texture_height": 32,
+				"visible_bounds_width": 2,
+				"visible_bounds_height": 2.5,
+				"visible_bounds_offset": [0, 0.75, 0]
+			},
+			"bones": [
+				{
+					"name": "bone",
+					"pivot": [0, 0, 0],
+					"cubes": [
+						{
+							"origin": [-4, 0, -8],
+							"size": [8, 15, 1],
+							"uv": {
+								"north": {"uv": [0, 0], "uv_size": [8, 15]},
+								"east": {"uv": [0, 15], "uv_size": [1, 15]},
+								"south": {"uv": [8, 0], "uv_size": [8, 15]},
+								"west": {"uv": [1, 15], "uv_size": [1, 15]},
+								"up": {"uv": [2, 15], "uv_size": [8, 1]},
+								"down": {"uv": [10, 16], "uv_size": [8, -1]}
+							}
+						}
+					]
+				}
+			]
+		}
+	]
+}

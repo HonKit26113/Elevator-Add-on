@@ -10,27 +10,11 @@
     },
     "components": {
       "honkit26113:terminal_interact": {},
-      "minecraft:geometry": "minecraft:geometry.full_block",
       "minecraft:destructible_by_mining": {
         "seconds_to_destroy": 3
       },
       "minecraft:destructible_by_explosion": {
         "explosion_resistance": 20
-      },
-      "minecraft:map_color": "#672E7D",
-      "minecraft:material_instances" : {
-        "*": {
-          "texture": "diamond_block",
-          "render_method" : "opaque"
-        },
-        "up": {
-          "texture": "emerald_block",
-          "render_method" : "opaque"
-        },
-        "down": {
-          "texture": "emerald_block",
-          "render_method" : "opaque"
-        }
       }
     }
   }

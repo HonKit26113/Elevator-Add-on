@@ -1,6 +1,7 @@
 import { world, system, PlayerPermissionLevel } from '@minecraft/server';
 import { ActionFormData, ModalFormData } from "@minecraft/server-ui";
 import { noPermsErrorMenu } from './ElevatorTerminal';
+import { showHelpMenu } from './Guidebook';
 // Initialize JSON
 let elevatorJson;
 let elevatorData;
@@ -246,7 +247,8 @@ export function openInitMenu(player, block) {
         .body(`To bind this Terminal to an Elevator, "Set up this Terminal", select an Elevator, and this Terminal will open the list of floors for that Elevator!`)
         .button(`Set up this Terminal`, "textures/ui/icon_book_writable")
         .button(`Add/Edit Elevators`, "textures/ui/editIcon")
-        .button(`Permission Settings`, "textures/ui/permissions_op_crown");
+        .button(`Permission Settings`, "textures/ui/permissions_op_crown")
+        .button(`Help`, "textures/ui/missing_item");
     initMenu.show(player).then((response) => {
         switch (response.selection) {
             case 0:
@@ -264,6 +266,9 @@ export function openInitMenu(player, block) {
                         .button(`Ok`);
                     errorMenu.show(player).then((response) => { permissionSettings(player); });
                 }
+                break;
+            case 3:
+                showHelpMenu(player);
                 break;
             default:
                 break;
@@ -283,8 +288,9 @@ function permissionSettings(player) {
         world.setDynamicProperty("honkit26113:elevator_usage_op_only", JSON.stringify(response.formValues[1]));
         world.setDynamicProperty("honkit26113:wrench_usage_op_only", JSON.stringify(response.formValues[2]));
         if (player.playerPermissionLevel !== PlayerPermissionLevel.Operator) {
-            world.sendMessage(`§o§i[${player.name}: Changed Elevator access settings]§r`);
+            world.sendMessage(`§o§i[${player.name}: Changed Elevator permission settings]§r`);
         }
+        sendActionOutput(player, "Changes saved");
     });
 }
 /**
@@ -367,7 +373,7 @@ export function showList(player, actionNumber, block) {
 export function openFloorsList(player, elevatorId, block, actionNumber) {
     const elevator = getElevatorById(elevatorId);
     const submenu = new ActionFormData();
-    submenu.title(`Select Floor for ${elevatorId}: ${getElevatorName(elevatorId)}`);
+    submenu.title(`Select Floor for ${getElevatorName(elevatorId)}`);
     // Open Admin Panel button
     if (actionNumber === 2) {
         submenu.button(`Open Admin Panel`, "textures/ui/permissions_op_crown");
@@ -428,12 +434,20 @@ export function openFloorsList(player, elevatorId, block, actionNumber) {
                 }
             }
             else {
-                world.sendMessage(`Button no. ${response.selection}`);
+                //world.sendMessage(`Button no. ${response.selection}`)
                 if (isPropertyTrue("honkit26113:elevator_usage_op_only") && player.playerPermissionLevel !== PlayerPermissionLevel.Operator) {
                     await noPermsErrorMenu(player);
                 }
                 else {
-                    const destLevel = getFloorLevel(elevatorId, selectedFloorIndex) ?? 0;
+                    const destLevel = getFloorLevel(elevatorId, selectedFloorIndex);
+                    if (destLevel === "" || destLevel === undefined || Number(destLevel) < -64 || Number(destLevel) > 319) {
+                        sendActionOutput(player, `Floor Y Level is invalid!`);
+                        return;
+                    }
+                    if (typeof destLevel !== "number" || destLevel < -64 || destLevel > 319 || destLevel === undefined) {
+                        sendActionOutput(player, "Failed to send elevator; invalid Y-level!");
+                        return;
+                    }
                     // Move elevator to destination floor
                     move_elevator(Number(destLevel), block, elevatorId);
                     sendActionOutput(player, `Sent elevator to floor ${getFloorName(elevatorId, selectedFloorIndex)}`);
@@ -447,7 +461,7 @@ function editFloorProperties(player, elevatorId, floor, block) {
     const floor_details = new ModalFormData()
         .title(`${getFloorName(elevatorId, floor)} Properties`)
         .textField('Floor Name', '', { defaultValue: `${getFloorName(elevatorId, floor)}` })
-        .textField('Floor Y Level', 'Integers Only', { defaultValue: `${getFloorLevel(elevatorId, floor)}` })
+        .textField(`Floor Y Level - Your Y level: ${player.location.y - 1}`, 'Integers Only: [-64, 319]', { defaultValue: `${getFloorLevel(elevatorId, floor)}` })
         .toggle('Send the elevator here', { defaultValue: true })
         .toggle(`Delete this floor. §cThis action cannot be undone!§r`, { defaultValue: false });
     floor_details.show(player).then((floor_response) => {
@@ -459,16 +473,17 @@ function editFloorProperties(player, elevatorId, floor, block) {
             return;
         }
         setFloorName(elevatorId, floor, floor_response.formValues[0]);
-        setFloorLevel(elevatorId, floor, Number(floor_response.formValues[1]));
-        world.sendMessage(`y level ${getFloorLevel(elevatorId, floor)}, floor no. ${floor}`);
-        world.sendMessage(`name ${getFloorName(elevatorId, floor)}`);
-        world.sendMessage(`name list ${JSON.stringify(getElevatorById(elevatorId).floors)}`);
+        const floorLevel = floor_response.formValues[1];
+        if (floorLevel === "" || floorLevel === undefined || Number(floorLevel) < -64 || Number(floorLevel) > 319) {
+            sendActionOutput(player, `Floor Y Level is invalid!`);
+            return;
+        }
+        setFloorLevel(elevatorId, floor, Number(floorLevel));
+        //world.sendMessage(`y level ${getFloorLevel(elevatorId, floor)}, floor no. ${floor}`);
+        //world.sendMessage(`name ${getFloorName(elevatorId, floor)}`);
+        //world.sendMessage(`name list ${JSON.stringify(getElevatorById(elevatorId).floors)}`);
         let destLevel = getFloorLevel(elevatorId, floor);
         if (floor_response.formValues[2] === true) {
-            if (getFloorLevel(elevatorId, floor) === undefined) {
-                sendActionOutput(player, `Floor Y Level cannot be empty`);
-                return;
-            }
             destLevel = getFloorLevel(elevatorId, floor);
             move_elevator(Number(destLevel), block, elevatorId);
             sendActionOutput(player, `Sent elevator to floor ${getFloorName(elevatorId, floor)} at ${getFloorLevel(elevatorId, floor)}`);
@@ -479,6 +494,7 @@ function editFloorProperties(player, elevatorId, floor, block) {
     });
 }
 export const elevatorTextures = [
+    "default",
     "iron_block",
     "smooth_stone",
     "cobblestone",
@@ -521,18 +537,20 @@ function editElevatorProperties(player, elevatorId) {
  * @returns
  */
 export function move_elevator(destinationLevel, block, elevatorToMove) {
-    world.sendMessage(`e_to_move: ${elevatorToMove}, ${typeof (elevatorToMove)}`);
+    //world.sendMessage(`e_to_move: ${elevatorToMove}, ${typeof(elevatorToMove)}`)
     const findElevator = block.dimension.getEntities({
         type: "honkit26113:elevator_block",
         location: { x: block.location.x - 2, y: -63, z: block.location.z - 2 },
         volume: { x: 5, y: 320, z: 5 },
-        maxDistance: 320,
+        //maxDistance: 320,
         propertyOptions: [{
                 propertyId: "honkit26113:elevator_id",
                 value: { equals: Number(elevatorToMove) }
             }]
     });
     for (const e of findElevator) {
+        if (e.hasTag("is_moving"))
+            continue;
         if (Math.floor(e.location.y) === destinationLevel) {
             world.sendMessage(`you're already here!`);
             return;
@@ -540,32 +558,66 @@ export function move_elevator(destinationLevel, block, elevatorToMove) {
         system.runJob(move(e, destinationLevel, elevatorToMove));
     }
 }
+/**
+ * This function must be run using `system.runJob`.
+ * @param entity the elevator block to be moved
+ * @param destLevel destination Y level
+ * @param elevatorId `elevatorId` to be moved
+ * @returns
+ */
 function* move(entity, destLevel, elevatorId) {
-    const THIS_ELEVATOR_SPEED = getElevatorSpeed(elevatorId);
-    const destLevelAdjusted = Math.round(destLevel);
-    let last_executed_tick = system.currentTick;
+    const speed = getElevatorSpeed(elevatorId);
+    const step = (0.1 * speed / 2);
+    let lastTick = system.currentTick;
     while (true) {
-        if (system.currentTick - last_executed_tick >= 1) {
-            last_executed_tick = system.currentTick;
-            if (destLevelAdjusted > entity.location.y) {
-                entity.teleport({ x: entity.location.x, y: entity.location.y + (0.1 * THIS_ELEVATOR_SPEED / 2), z: entity.location.z });
-            }
-            else {
-                entity.teleport({ x: entity.location.x, y: entity.location.y - (0.1 * THIS_ELEVATOR_SPEED / 2), z: entity.location.z });
-            }
-            if (Math.abs(entity.location.y - destLevelAdjusted) < (0.1 * THIS_ELEVATOR_SPEED / 2)) {
-                const find_passengers = entity.dimension.getPlayers({
-                    location: entity.location,
-                    maxDistance: 3
-                });
-                for (const p of find_passengers) {
+        if (!entity.isValid)
+            return;
+        // This tick check, while seemingly redundant, is what prevents players from falling through the elevator platform.
+        if (system.currentTick - lastTick >= 1) {
+            lastTick = system.currentTick;
+            const pos = entity.location;
+            const dist = destLevel - pos.y;
+            // ARRIVAL LOGIC
+            if (Math.abs(dist) <= step) {
+                entity.teleport({ x: pos.x, y: destLevel, z: pos.z }, { checkForBlocks: false });
+                const players = entity.dimension.getPlayers({ location: entity.location, maxDistance: 4 });
+                for (const p of players)
                     p.playSound("honkit26113.elevator_arrive");
-                }
-                entity.teleport({ x: entity.location.x, y: destLevel, z: entity.location.z });
+                entity.removeTag("is_moving");
                 return;
             }
+            // MOVEMENT LOGIC
+            const nextY = pos.y + (dist > 0 ? step : -step);
+            entity.teleport({ x: pos.x, y: nextY, z: pos.z }, { checkForBlocks: false });
         }
         yield;
     }
 }
+// function* move(entity: Entity, destLevel: number, elevatorId: number): Generator<void, void, void> {
+//     const THIS_ELEVATOR_SPEED = getElevatorSpeed(elevatorId);
+//     const destLevelAdjusted = Math.round(destLevel);
+//     //let last_executed_tick = system.currentTick;
+//     while (true) {
+//         //if (system.currentTick - last_executed_tick >= 1) {
+//             //last_executed_tick = system.currentTick;
+//             if (destLevelAdjusted > entity.location.y) {
+//                 entity.teleport({ x: entity.location.x, y: entity.location.y+(0.1 * THIS_ELEVATOR_SPEED / 2), z: entity.location.z })
+//             } else {
+//                 entity.teleport({ x: entity.location.x, y: entity.location.y-(0.1 * THIS_ELEVATOR_SPEED / 2), z: entity.location.z })
+//             }
+//             if (Math.abs(entity.location.y - destLevelAdjusted) < (0.1 * THIS_ELEVATOR_SPEED / 2)) {
+//                 const find_passengers = entity.dimension.getPlayers({
+//                     location: entity.location,
+//                     maxDistance: 3
+//                 })
+//                 for (const p of find_passengers) {
+//                     p.playSound("honkit26113.elevator_arrive");
+//                 }
+//                 entity.teleport({x: entity.location.x, y: destLevel, z: entity.location.z});
+//                 return;
+//             }
+//         //}
+//         yield;
+//     }
+// }
 //# sourceMappingURL=Elevator.js.map

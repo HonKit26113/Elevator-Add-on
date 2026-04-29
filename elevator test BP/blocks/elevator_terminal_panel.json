@@ -1,0 +1,78 @@
+// This file was modified by HonKit26113 (@HonKit1103). Do not distribute without permission.
+{
+	"format_version": "1.26.0",
+	"minecraft:block": {
+		"description": {
+			"identifier": "honkit26113:elevator_terminal_panel",
+            "menu_category": {
+                "category": "equipment"
+            },
+            "traits": {
+                "minecraft:placement_position": {
+                    "enabled_states": [ "minecraft:block_face" ]
+                }
+            }
+		},
+		"components": {
+            "honkit26113:terminal_interact": {},
+            "minecraft:material_instances": {
+                "*": {
+                    "texture": "elevator_terminal_panel",
+                    "render_method": "alpha_test"
+                }
+            },
+            "minecraft:geometry": {
+                "identifier": "geometry.elevator_terminal_panel"
+            },
+            "minecraft:liquid_detection": {
+                "detection_rules": [
+                    {
+                        "can_contain_liquid": true,
+                        "on_liquid_touches": "no_reaction"
+                    }
+                ]
+            },
+            "minecraft:selection_box": {
+                "origin":  [-4, 0, -8],
+                "size":    [8, 15, 1]
+            },
+            "minecraft:collision_box": {
+                "origin":  [-4, 0, -8],
+                "size":    [8, 15, 1]
+            },
+            "minecraft:destructible_by_mining": {
+                "seconds_to_destroy": 1.5
+            },
+            "minecraft:destructible_by_explosion": {
+                "explosion_resistance": 20
+            },
+            "minecraft:light_dampening": 0
+        },
+        "permutations": [
+            {
+                "condition": "q.block_state('minecraft:block_face') == 'north'",
+                "components": {
+                  "minecraft:transformation": { "rotation": [0, 180, 0] }
+                }
+            },
+            {
+                "condition": "q.block_state('minecraft:block_face') == 'west'",
+                "components": {
+                  "minecraft:transformation": { "rotation": [0, 270, 0] }
+                }
+            },
+            {
+                "condition": "q.block_state('minecraft:block_face') == 'south'",
+                "components": {
+                  "minecraft:transformation": { "rotation": [0, 0, 0] }
+                }
+            },
+            {
+                "condition": "q.block_state('minecraft:block_face') == 'east'",
+                "components": {
+                  "minecraft:transformation": { "rotation": [0, 90, 0] }
+                }
+            }
+        ]
+	}
+}

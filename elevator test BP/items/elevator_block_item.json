@@ -12,7 +12,7 @@
       "minecraft:entity_placer": {
       	"entity": "honkit26113:elevator_block"
       },
-		  "minecraft:icon": "honkit26113:elevator_block"
+      "minecraft:icon": "honkit26113:elevator_block"
     }
   }
 }
