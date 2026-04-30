@@ -64,15 +64,15 @@ const guidebookData = [
         "content": [
             {
                 "name": "Change Platform Texture",
-                "body": ""
+                "body": `${NUMBER_1_ICON} Select §6Add/Edit Elevators§r.\n${NUMBER_2_ICON} Select the elevator to change textures for.\n${NUMBER_3_ICON} Select §6Edit Elevator Properties§r. Change the speed and click §6Submit§r.\n${NUMBER_4_ICON} Bind a Wrench to the elevator, and use §6Attack§r (left click) on the elevator platforms to apply the texture change.`
             },
             {
-                "name": "Editing Elevator Settings",
-                "body": ""
+                "name": "Edit Elevator Settings",
+                "body": `${NUMBER_1_ICON} Select §6Add/Edit Elevators§r.\n${NUMBER_2_ICON} Select the elevator to change textures for.\n${NUMBER_3_ICON} Select §6Edit Elevator Properties§r. Change settings and click §6Submit§r.`
             },
             {
-                "name": "Permission Settings",
-                "body": ""
+                "name": "Edit Permission Settings",
+                "body": `${NUMBER_1_ICON} Interact with any Terminal. If the Terminal is bound to an Elevator, select §6Admin Settings§r. \n${NUMBER_2_ICON} Select §6Permission Settings§r. Change the settings as you wish, then click §6Submit§r.`
             }
         ]
     }

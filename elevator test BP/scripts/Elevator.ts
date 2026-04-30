@@ -147,10 +147,11 @@ function setElevatorName(elevatorId: number, newName: string): void {
  * @param {number} targetId 
  * @returns {object}
  */
-function getElevatorById(targetId: number): Elevator {
+export function getElevatorById(targetId: number): Elevator {
     const elevators = elevatorData.elevators;
     const elevatorObject = elevators.find((elevator: Elevator) => elevator.id === targetId);
     if (!elevatorObject) {
+        throw new Error("Returned undefined");
         throw console.error("ElevatorObject returned undefined");
     }
     return elevatorObject;

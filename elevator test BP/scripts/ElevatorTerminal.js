@@ -1,6 +1,6 @@
 import { world, system, PlayerPermissionLevel } from '@minecraft/server';
 import { ActionFormData } from "@minecraft/server-ui";
-import { openInitMenu, openFloorsList } from './Elevator';
+import { openInitMenu, openFloorsList, getElevatorById } from './Elevator';
 // clear dynamic properties debug stick
 // note: this will clear ALL dynamic properties, not just dp's from the elevator add-on!
 /*world.afterEvents.itemUse.subscribe((data) => {
@@ -25,6 +25,14 @@ const TerminalInteractComponent = {
     async onPlayerInteract({ block, player }, {}) {
         const is_focused = world.getDynamicProperty(`honkit26113:terminal${JSON.stringify(block.location)}`);
         if (is_focused) {
+            try {
+                getElevatorById(is_focused);
+            }
+            catch (Error) {
+                world.sendMessage("failed");
+                openInitMenu(player, block);
+                return;
+            }
             //world.sendMessage(`pew: ${world.getDynamicProperty(`honkit26113:terminal${JSON.stringify(block.location)}`)}`)
             openFloorsList(player, is_focused, block, 2);
         }

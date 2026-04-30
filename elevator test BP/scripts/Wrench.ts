@@ -1,5 +1,5 @@
 import { world, system, PlayerPermissionLevel, GameMode, ItemStack, Player, EquipmentSlot } from '@minecraft/server';
-import { getElevatorName, getElevatorTexture, sendActionOutput, showList } from './Elevator';
+import { getElevatorName, getElevatorTexture, sendActionOutput, showList, getElevatorById } from './Elevator';
 
 const NO_PERMS = "You don't have permission to do that!";
 
@@ -14,7 +14,8 @@ function isWrenchOperator(player: Player): boolean {
         opOnly = "false";
         world.setDynamicProperty("honkit26113:wrench_usage_op_only", opOnly);
     }
-    if (JSON.parse(opOnly as string)) { // if op only, check if player is op
+    // If elevator is set to OP only, check if the player is OP.
+    if (JSON.parse(opOnly as string)) {
         return (player.playerPermissionLevel === PlayerPermissionLevel.Operator);
     }
     return true;
@@ -52,15 +53,28 @@ const WrenchUseComponent: import("@minecraft/server").ItemCustomComponent = {
             sendActionOutput(attackingEntity as Player, NO_PERMS);
             return;
         }
+
+        // If player is sneaking, remove the elevator block.
         if (attackingEntity.isSneaking) {
             hitEntity.triggerEvent("instant_despawn");
+            // If player is not in creative, drop the elevator block as an item.
             if (attackingEntity.getGameMode() !== GameMode.Creative) {
                 attackingEntity.dimension.spawnItem(new ItemStack("honkit26113:elevator_block", 1), attackingEntity.location);
             }
             return;
         }
         const elevatorId: number = itemStack.getDynamicProperty("honkit26113:wrench_bound_to") as number ?? -1;
-        //world.sendMessage(`${typeof(elevatorId)}`)
+
+        // If elevator doesn't exist anymore, unbind the wrench.
+        try {
+            getElevatorById(elevatorId);
+        } catch (Error) {
+            giveWrench(attackingEntity, 0);
+            sendActionOutput(attackingEntity, "Elevator was deleted. Unbinding this Wrench.");
+            return;
+        }
+
+        // Else, bind the wrench to the selected elevator.
         hitEntity.setProperty("honkit26113:elevator_id", elevatorId);
         hitEntity.setProperty("honkit26113:texture", getElevatorTexture(elevatorId));
         //world.sendMessage(`${elevatorTextures[getElevatorTexture(elevatorId)]}`);
@@ -79,7 +93,7 @@ const WrenchUseComponent: import("@minecraft/server").ItemCustomComponent = {
  */
 function giveWrench(player: Player, elevatorId: number) {
     const equipment = player.getComponent('equippable');
-    let wrench;
+    let wrench: ItemStack;
     if (elevatorId === 0) {
         wrench = new ItemStack("honkit26113:elevator_wrench");
     } else {

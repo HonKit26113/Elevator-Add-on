@@ -1,5 +1,5 @@
 import { world, system, PlayerPermissionLevel, GameMode, ItemStack, Player, EquipmentSlot } from '@minecraft/server';
-import { getElevatorName, getElevatorTexture, sendActionOutput, showList } from './Elevator';
+import { getElevatorName, getElevatorTexture, sendActionOutput, showList, getElevatorById } from './Elevator';
 const NO_PERMS = "You don't have permission to do that!";
 /**
  * determines if the player has permissions to use wrenches
@@ -57,7 +57,16 @@ const WrenchUseComponent = {
             return;
         }
         const elevatorId = itemStack.getDynamicProperty("honkit26113:wrench_bound_to") ?? -1;
-        //world.sendMessage(`${typeof(elevatorId)}`)
+        //world.sendMessage(`${(elevatorId)}`)
+        try {
+            getElevatorById(elevatorId);
+        }
+        catch (Error) {
+            const equipment = attackingEntity.getComponent('equippable');
+            equipment.setEquipment(EquipmentSlot.Mainhand, new ItemStack("honkit26113:elevator_wrench"));
+            sendActionOutput(attackingEntity, "Elevator was deleted. Unbinding this Wrench.");
+            return;
+        }
         hitEntity.setProperty("honkit26113:elevator_id", elevatorId);
         hitEntity.setProperty("honkit26113:texture", getElevatorTexture(elevatorId));
         //world.sendMessage(`${elevatorTextures[getElevatorTexture(elevatorId)]}`);
