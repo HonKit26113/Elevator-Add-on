@@ -12,7 +12,8 @@ function isWrenchOperator(player) {
         opOnly = "false";
         world.setDynamicProperty("honkit26113:wrench_usage_op_only", opOnly);
     }
-    if (JSON.parse(opOnly)) { // if op only, check if player is op
+    // If elevator is set to OP only, check if the player is OP.
+    if (JSON.parse(opOnly)) {
         return (player.playerPermissionLevel === PlayerPermissionLevel.Operator);
     }
     return true;
@@ -49,24 +50,26 @@ const WrenchUseComponent = {
             sendActionOutput(attackingEntity, NO_PERMS);
             return;
         }
+        // If player is sneaking, remove the elevator block.
         if (attackingEntity.isSneaking) {
             hitEntity.triggerEvent("instant_despawn");
+            // If player is not in creative, drop the elevator block as an item.
             if (attackingEntity.getGameMode() !== GameMode.Creative) {
                 attackingEntity.dimension.spawnItem(new ItemStack("honkit26113:elevator_block", 1), attackingEntity.location);
             }
             return;
         }
         const elevatorId = itemStack.getDynamicProperty("honkit26113:wrench_bound_to") ?? -1;
-        //world.sendMessage(`${(elevatorId)}`)
+        // If elevator doesn't exist anymore, unbind the wrench.
         try {
             getElevatorById(elevatorId);
         }
         catch (Error) {
-            const equipment = attackingEntity.getComponent('equippable');
-            equipment.setEquipment(EquipmentSlot.Mainhand, new ItemStack("honkit26113:elevator_wrench"));
+            giveWrench(attackingEntity, 0);
             sendActionOutput(attackingEntity, "Elevator was deleted. Unbinding this Wrench.");
             return;
         }
+        // Else, bind the wrench to the selected elevator.
         hitEntity.setProperty("honkit26113:elevator_id", elevatorId);
         hitEntity.setProperty("honkit26113:texture", getElevatorTexture(elevatorId));
         //world.sendMessage(`${elevatorTextures[getElevatorTexture(elevatorId)]}`);

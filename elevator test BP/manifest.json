@@ -1,21 +1,17 @@
 {
 	"format_version": 2,
 	"header": {
-		"description": "Adds 5 new cave types for you to explore!\nPack made by HonKit26113.\nVersion 1.5.5 released July 25, 2024.",
-		"name": "ELEVATORS BP",
+		"description": "Create and customize elevators!\nCreator: HonKit26113.",
+		"name": "ModuleLift v1.0 BP",
 		"uuid": "db406a80-3c67-4e30-a27f-35c7cc3f4763",
-		"version": [1, 6, 1],
-        "min_engine_version": [
-            1,
-            21,
-            20
-        ]
+		"version": [1, 0, 0],
+        "min_engine_version": [ 1, 26, 0 ]
 	},
 	"modules": [
 		{
 			"type": "data",
 			"uuid": "cd7c1025-0270-4da2-ac57-042a6aef4487",
-			"version": [1, 5, 8]
+			"version": [1, 0, 0]
 		},
     	{
       		"type": "script",
@@ -28,8 +24,12 @@
 	"capabilities": [ "script_eval" ],
     "dependencies": [
         {
+			"uuid": "a96fd605-5dbc-460e-8d65-e527c1d088f4",
+            "version": [1, 0, 0]
+        },
+        {
       		"module_name": "@minecraft/server",
-      		"version": "2.3.0"
+      		"version": "2.5.0"
     	},
         {
       		"module_name": "@minecraft/server-ui",

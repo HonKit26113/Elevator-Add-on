@@ -263,7 +263,7 @@ export function openInitMenu(player, block) {
                 else {
                     const errorMenu = new ActionFormData()
                         .title(`Wait!`)
-                        .body(`You are not an Operator. If you enable these settings, you will lose access to admin priviledges for Elevators.\n\nAre you the World Owner? Set your permission level to Operator to stop displaying this warning.`)
+                        .body(`You are not an Operator. If you change these settings, you may lose access to admin priviledges for Elevators.\n\nAre you the World Owner? Set your permission level to Operator to stop displaying this warning.`)
                         .button(`Ok`);
                     errorMenu.show(player).then((response) => { permissionSettings(player); });
                 }
@@ -276,7 +276,7 @@ export function openInitMenu(player, block) {
         }
     });
 }
-function permissionSettings(player) {
+export function permissionSettings(player) {
     const permissionMenu = new ModalFormData()
         .title(`Permission Settings`)
         .toggle(`Only Operators can change Elevator settings`, { defaultValue: isPropertyTrue("honkit26113:elevator_settings_op_only") })

@@ -4,7 +4,7 @@
     "description": {
       "identifier": "honkit26113:elevator_block",
       "runtime_identifier": "minecraft:happy_ghast",
-      "is_spawnable": true,
+      "is_spawnable": false,
       "is_summonable": true, // change to false
       "is_experimental": false,
       "properties": {
@@ -17,7 +17,7 @@
         "honkit26113:texture": {
           "type": "int",
           "default": 0,
-          "range": [0, 9],
+          "range": [0, 9], // the max value is the number of textures - 1
           /*"type": "enum", 
           "values": [ // This array MUST match elevatorTextures in script
             "iron_block",
